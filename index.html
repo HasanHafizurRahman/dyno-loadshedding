@@ -260,7 +260,7 @@ const CONFIG = {
   MAX_SPEED: 840,         // px / s
   ACCELERATION: 1.65,     // px / s^2
 
-  // Dino Physics (Snappy & Responsive)
+  // Dino Physics
   DINO_X: 78,
   JUMP_IMPULSE: -840,     // Initial jump velocity px/s
   VARIABLE_JUMP_CUT: -315,// Clamped velocity if released early
@@ -280,7 +280,22 @@ const CONFIG = {
 };
 
 // =====================================================================
-// SECTION 2: RICH COLOR PALETTE & BANGLA DICTIONARY
+// OFFICIAL CHROMIUM T-REX HDPI SPRITE SHEET (EXACT CHROME DINOSAUR)
+// =====================================================================
+const CHROME_SPRITE_B64 = 'data:image/png;base64,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';
+
+let chromeSpriteImg = null;
+function loadChromeSpriteSheet() {
+  return new Promise((resolve) => {
+    chromeSpriteImg = new Image();
+    chromeSpriteImg.onload = () => resolve();
+    chromeSpriteImg.onerror = () => resolve();
+    chromeSpriteImg.src = CHROME_SPRITE_B64;
+  });
+}
+
+// =====================================================================
+// SECTION 2: COLOR PALETTE & BANGLA DICTIONARY
 // =====================================================================
 const PALETTE = {
   // Atmosphere Skies
@@ -300,8 +315,8 @@ const PALETTE = {
   METRO_VIADUCT_LIGHT: '#57606f',
   METRO_PILLAR: '#2f3542',
   METRO_TRAIN_SILVER: '#dfe4ea',
-  METRO_TRAIN_GREEN: '#006a4e', // Bangladesh National Green
-  METRO_TRAIN_RED: '#f42a41',   // Bangladesh National Red
+  METRO_TRAIN_GREEN: '#006a4e',
+  METRO_TRAIN_RED: '#f42a41',
   METRO_WINDOW_LIT: '#fff4b8',
 
   // Dhaka Buildings & Landmarks
@@ -313,12 +328,12 @@ const PALETTE = {
   BLDG_WINDOW_OFF: '#131824',
   CANDLE_GLOW: '#ff9f43',
   ROOF_TIN: '#4b5568',
-  SIGN_BKASH: '#e2136e',       // Iconic bKash Magenta
-  SIGN_NAGAD: '#f7941d',       // Iconic Nagad Orange
+  SIGN_BKASH: '#e2136e',
+  SIGN_NAGAD: '#f7941d',
   SIGN_PHARMACY: '#27ae60',
   WIRE_COLOR: '#0d111a',
 
-  // Ground, Asphalt & Street
+  // Ground & Street
   CURB_YELLOW: '#f1c40f',
   CURB_BLACK: '#1e272e',
   ROAD_ASPHALT: '#181b22',
@@ -327,21 +342,14 @@ const PALETTE = {
   PUDDLE: '#2c3e50',
   PUDDLE_REFLECT: '#576574',
 
-  // Dino Hero
-  DINO_SKIN: '#4b5360',
-  DINO_SHADOW: '#2d333b',
-  DINO_BELLY: '#747d8c',
-  GAMCHA_RED: '#d63031',
-  GAMCHA_WHITE: '#ffffff',
-
-  // Electric Utility Pole & Transformer
+  // Utility Pole
   POLE_CONCRETE: '#747d8c',
   TRANSFORMER_BODY: '#2f3542',
   SPARK: '#ffeaa7',
 
-  // Battery Rickshaw (ব্যাটারি অটোরিকশা)
-  RICKSHAW_FRAME: '#0984e3',     // Brilliant royal blue body
-  RICKSHAW_HOOD_RED: '#d63031',   // Red & Yellow vinyl canopy
+  // Battery Rickshaw
+  RICKSHAW_FRAME: '#0984e3',
+  RICKSHAW_HOOD_RED: '#d63031',
   RICKSHAW_HOOD_YELLOW: '#f1c40f',
   RICKSHAW_BATTERY_BOX: '#1e272e',
   RICKSHAW_CHROME: '#dfe4ea',
@@ -355,10 +363,10 @@ const PALETTE = {
   LUNGI_CHECK: '#f1f2f6',
   SHIRT_RED: '#ee5253',
   SHIRT_PURPLE: '#8854d0',
-  TAKA_500: '#1dd1a1',           // 500 Taka Green Note
-  TAKA_1000: '#ff6b6b',          // 1000 Taka Red Note
+  TAKA_500: '#1dd1a1',
+  TAKA_1000: '#ff6b6b',
 
-  // Crow (দাঁড়কাক)
+  // Crow
   CROW_BODY: '#1e2024',
   CROW_FEATHER: '#343840',
   CROW_EYE: '#ff9f43',
@@ -383,7 +391,7 @@ const GAME_OVER_LINES = [
   "ব্যাটারি রিকশার প্রজেক্টর হেডলাইটের আলোয় ডাইনোর চোখ ধাঁধিয়ে গেল!",
   "পোল ছিল সোজা, মাথা হইলো বাঁকা! শর্ট সার্কিট খেয়ে প্যারালাইজড!",
   "কাকের সাথে গুঁতো খেয়ে পতন! ডাইনো আর উড়তে পারল না ভাই!",
-  "ডাইনোর গামছা উড়ে গেছে, চাঁদাবাজরা সব টাকাপয়সা কেড়ে নিছে!",
+  "মিটারের বিল বাকি, তাই বিদ্যুৎ উন্নয়ন বোর্ড লাইন কেটে দিল!",
   "মামা একটু আস্তে চালান! ব্যাটারি রিকশার ধাক্কায় ডাইনো কুপোকাত!"
 ];
 
@@ -396,70 +404,120 @@ function createOffscreenCanvas(width, height) {
 }
 
 // =====================================================================
-// SECTION 3: SPRITE FACTORY (PRE-RENDERING TO BUFFERS)
+// SECTION 3: SPRITE FACTORY (EXACT CHROME DINO + DHAKA ASSETS)
 // =====================================================================
 const SPRITES = {};
 
-function initSprites() {
-  // 1. DINO RUN 1 (66 x 70)
-  {
-    const { canvas, ctx } = createOffscreenCanvas(66, 70);
-    drawDinoDetailed(ctx, 0, 0, 'run1');
-    SPRITES.DINO_RUN1 = canvas;
-  }
-  // 2. DINO RUN 2 (66 x 70)
-  {
-    const { canvas, ctx } = createOffscreenCanvas(66, 70);
-    drawDinoDetailed(ctx, 0, 0, 'run2');
-    SPRITES.DINO_RUN2 = canvas;
-  }
-  // 3. DINO JUMP (66 x 70)
-  {
-    const { canvas, ctx } = createOffscreenCanvas(66, 70);
-    drawDinoDetailed(ctx, 0, 0, 'jump');
-    SPRITES.DINO_JUMP = canvas;
-  }
-  // 4. DINO DUCK 1 (88 x 45)
-  {
-    const { canvas, ctx } = createOffscreenCanvas(88, 45);
-    drawDinoDuckDetailed(ctx, 0, 0, 'duck1');
-    SPRITES.DINO_DUCK1 = canvas;
-  }
-  // 5. DINO DUCK 2 (88 x 45)
-  {
-    const { canvas, ctx } = createOffscreenCanvas(88, 45);
-    drawDinoDuckDetailed(ctx, 0, 0, 'duck2');
-    SPRITES.DINO_DUCK2 = canvas;
-  }
-  // 6. DINO DEAD (66 x 70)
-  {
-    const { canvas, ctx } = createOffscreenCanvas(66, 70);
-    drawDinoDetailed(ctx, 0, 0, 'dead');
-    SPRITES.DINO_DEAD = canvas;
+// Clean extraction of Official Chrome Offline T-Rex (pixel-perfect, removes halo, keeps authentic eye)
+function extractCleanChromeSprite(sourceImg, sx, sy, sw, sh, dw, dh) {
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = sw;
+  tempCanvas.height = sh;
+  const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+  tempCtx.drawImage(sourceImg, sx, sy, sw, sh, 0, 0, sw, sh);
+
+  const imgData = tempCtx.getImageData(0, 0, sw, sh);
+  const data = imgData.data;
+
+  function isCharcoal(x, y) {
+    const idx = (y * sw + x) * 4;
+    const a = data[idx + 3];
+    if (a < 50) return false;
+    const r = data[idx], g = data[idx + 1], b = data[idx + 2];
+    return (r < 120 && g < 120 && b < 120);
   }
 
-  // 7. BATTERY RICKSHAW (ব্যাটারি অটোরিকশা) - 86 x 58
+  const visited = new Uint8Array(sw * sh);
+  const queue = [];
+
+  for (let x = 0; x < sw; x++) {
+    if (!isCharcoal(x, 0)) queue.push(x, 0);
+    if (!isCharcoal(x, sh - 1)) queue.push(x, sh - 1);
+  }
+  for (let y = 0; y < sh; y++) {
+    if (!isCharcoal(0, y)) queue.push(0, y);
+    if (!isCharcoal(sw - 1, y)) queue.push(sw - 1, y);
+  }
+
+  let qHead = 0;
+  while (qHead < queue.length) {
+    const x = queue[qHead++];
+    const y = queue[qHead++];
+    if (x < 0 || x >= sw || y < 0 || y >= sh) continue;
+    const pos = y * sw + x;
+    if (visited[pos]) continue;
+    if (isCharcoal(x, y)) continue;
+    visited[pos] = 1;
+    queue.push(x + 1, y, x - 1, y, x, y + 1, x, y - 1);
+  }
+
+  for (let y = 0; y < sh; y++) {
+    for (let x = 0; x < sw; x++) {
+      const pos = y * sw + x;
+      const idx = pos * 4;
+      if (visited[pos]) {
+        data[idx + 3] = 0; // Transparent (removes white background/halo)
+      } else if (isCharcoal(x, y)) {
+        // Authentic Chrome Charcoal (#535353)
+        data[idx] = 83;
+        data[idx + 1] = 83;
+        data[idx + 2] = 83;
+        data[idx + 3] = 255;
+      } else {
+        // Authentic Chrome eye (white pupil cutout)
+        data[idx] = 255;
+        data[idx + 1] = 255;
+        data[idx + 2] = 255;
+        data[idx + 3] = 255;
+      }
+    }
+  }
+
+  tempCtx.putImageData(imgData, 0, 0);
+
+  const destCanvas = document.createElement('canvas');
+  destCanvas.width = dw;
+  destCanvas.height = dh;
+  const destCtx = destCanvas.getContext('2d');
+  destCtx.imageSmoothingEnabled = false;
+  destCtx.drawImage(tempCanvas, 0, 0, sw, sh, 0, 0, dw, dh);
+
+  return destCanvas;
+}
+
+function initSprites() {
+  // 1. EXACT GOOGLE CHROME OFFLINE T-REX SPRITES (100% CANONICAL CHROMIUM HDPI)
+  // Cleaned pixel-for-pixel from the official sprite sheet (zero halo, perfect eye)
+  SPRITES.DINO_RUN1 = extractCleanChromeSprite(chromeSpriteImg, 1854, 2, 88, 94, 88, 94);
+  SPRITES.DINO_RUN2 = extractCleanChromeSprite(chromeSpriteImg, 1942, 2, 88, 94, 88, 94);
+  SPRITES.DINO_JUMP = extractCleanChromeSprite(chromeSpriteImg, 1678, 2, 88, 94, 88, 94);
+  SPRITES.DINO_BLINK = extractCleanChromeSprite(chromeSpriteImg, 1766, 2, 88, 94, 88, 94);
+  SPRITES.DINO_DEAD = extractCleanChromeSprite(chromeSpriteImg, 2118, 2, 88, 94, 88, 94);
+  SPRITES.DINO_DUCK1 = extractCleanChromeSprite(chromeSpriteImg, 2206, 2, 118, 94, 118, 94);
+  SPRITES.DINO_DUCK2 = extractCleanChromeSprite(chromeSpriteImg, 2324, 2, 118, 94, 118, 94);
+
+  // 2. BATTERY RICKSHAW (ব্যাটারি অটোরিকশা) - 86 x 58
   {
     const { canvas, ctx } = createOffscreenCanvas(86, 58);
     drawBatteryRickshawSprite(ctx);
     SPRITES.BATTERY_RICKSHAW = canvas;
   }
 
-  // 8. CHANDABAZ GROUP (চাঁদাবাজ সিন্ডিকেট) - 84 x 66
+  // 3. CHANDABAZ GROUP (চাঁদাবাজ সিন্ডিকেট) - 84 x 66
   {
     const { canvas, ctx } = createOffscreenCanvas(84, 66);
     drawChandabazDetailedSprite(ctx);
     SPRITES.CHANDABAZ = canvas;
   }
 
-  // 9. ELECTRIC POLE & TRANSFORMER - 30 x 105
+  // 4. ELECTRIC POLE & TRANSFORMER - 30 x 105
   {
     const { canvas, ctx } = createOffscreenCanvas(30, 105);
     drawElectricPoleDetailed(ctx);
     SPRITES.ELECTRIC_POLE = canvas;
   }
 
-  // 10. DHAKA CROW (দাঁড়কাক) - 48 x 36
+  // 5. DHAKA CROW (দাঁড়কাক) - 48 x 36
   {
     const { canvas: c1, ctx: ctx1 } = createOffscreenCanvas(48, 36);
     drawCrowDetailed(ctx1, 1);
@@ -470,14 +528,14 @@ function initSprites() {
     SPRITES.CROW2 = c2;
   }
 
-  // 11. METRO RAIL TRAIN CAR (160 x 30)
+  // 6. METRO RAIL TRAIN CAR (160 x 30)
   {
     const { canvas, ctx } = createOffscreenCanvas(160, 30);
     drawMetroTrainSprite(ctx);
     SPRITES.METRO_TRAIN = canvas;
   }
 
-  // 12. FAR SKYLINE LANDMARKS (Jatiya Sangsad Parliament & Towers)
+  // 7. FAR SKYLINE LANDMARKS (Parliament & High-Rises)
   SPRITES.LANDMARKS = [];
   for (let i = 0; i < 4; i++) {
     const { canvas, ctx } = createOffscreenCanvas(180, 160);
@@ -485,216 +543,13 @@ function initSprites() {
     SPRITES.LANDMARKS.push(canvas);
   }
 
-  // 13. MIDGROUND DHAKA SHOPS (Tong dokan, bKash/Nagad agent, Pharmacy, Biryani)
+  // 8. MIDGROUND DHAKA SHOPS (Tong dokan, bKash/Nagad agent, Pharmacy, Biryani)
   SPRITES.MID_SHOPS = [];
   for (let i = 0; i < 4; i++) {
     const { canvas, ctx } = createOffscreenCanvas(180, 110);
     drawDhakaMidShop(ctx, i);
     SPRITES.MID_SHOPS.push(canvas);
   }
-}
-
-// ---------------------------------------------------------------------
-// DETAILED DINO HERO WITH FLUTTERING GAMCHA
-// ---------------------------------------------------------------------
-function drawDinoDetailed(ctx, ox, oy, pose) {
-  const C = PALETTE.DINO_SKIN;
-  const CD = PALETTE.DINO_SHADOW;
-  const CB = PALETTE.DINO_BELLY;
-  const GR = PALETTE.GAMCHA_RED;
-  const GW = PALETTE.GAMCHA_WHITE;
-
-  ctx.save();
-  ctx.translate(ox, oy);
-
-  // Tail
-  ctx.fillStyle = C;
-  ctx.beginPath();
-  ctx.moveTo(34, 38);
-  ctx.quadraticCurveTo(10, 38, 2, 30);
-  ctx.quadraticCurveTo(8, 44, 26, 48);
-  ctx.fill();
-
-  // Torso / Belly
-  ctx.fillStyle = C;
-  ctx.beginPath();
-  ctx.ellipse(36, 38, 18, 16, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Belly soft tone
-  ctx.fillStyle = CB;
-  ctx.beginPath();
-  ctx.ellipse(40, 42, 10, 10, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Neck & Head
-  ctx.fillStyle = C;
-  ctx.beginPath();
-  ctx.moveTo(38, 26);
-  ctx.lineTo(44, 12);
-  ctx.lineTo(60, 10);
-  ctx.quadraticCurveTo(65, 14, 64, 20);
-  ctx.lineTo(52, 22); // mouth gap
-  ctx.lineTo(58, 28);
-  ctx.quadraticCurveTo(50, 32, 42, 34);
-  ctx.closePath();
-  ctx.fill();
-
-  // Snout upper jaw
-  ctx.beginPath();
-  ctx.roundRect(46, 8, 18, 12, [6, 8, 2, 2]);
-  ctx.fill();
-
-  // Lower Jaw
-  ctx.beginPath();
-  ctx.roundRect(48, 22, 12, 6, [2, 2, 4, 4]);
-  ctx.fill();
-
-  // Sharp Teeth
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.moveTo(52, 20); ctx.lineTo(54, 23); ctx.lineTo(56, 20);
-  ctx.moveTo(58, 20); ctx.lineTo(60, 23); ctx.lineTo(62, 20);
-  ctx.fill();
-
-  // Eye
-  if (pose === 'dead') {
-    ctx.strokeStyle = PALETTE.ALERT_RED;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(50, 11); ctx.lineTo(56, 17);
-    ctx.moveTo(56, 11); ctx.lineTo(50, 17);
-    ctx.stroke();
-  } else {
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath(); ctx.ellipse(53, 14, 4.5, 4.5, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#1e272e';
-    ctx.beginPath(); ctx.ellipse(54.5, 14, 2.2, 2.8, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath(); ctx.arc(55, 12.8, 1, 0, Math.PI * 2); ctx.fill();
-  }
-
-  // Realistic Fluttering Bangladeshi Gamcha (লাল-সাদা গামছা)
-  ctx.fillStyle = GR;
-  ctx.beginPath();
-  ctx.roundRect(36, 22, 14, 8, 3);
-  ctx.fill();
-  ctx.fillStyle = GW;
-  ctx.fillRect(38, 24, 3, 4);
-  ctx.fillRect(44, 24, 3, 4);
-
-  // Fluttering Gamcha Tails behind neck
-  const wave = pose === 'run1' ? 4 : (pose === 'run2' ? -3 : 0);
-  ctx.fillStyle = GR;
-  ctx.beginPath();
-  ctx.moveTo(36, 24);
-  ctx.quadraticCurveTo(24, 20 + wave, 14, 24 - wave);
-  ctx.lineTo(12, 29 - wave);
-  ctx.quadraticCurveTo(24, 26 + wave, 36, 29);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.fillStyle = GW;
-  ctx.fillRect(12, 24 - wave, 3, 5);
-  ctx.fillRect(20, 22 + wave, 2, 5);
-
-  // Tiny Claws
-  ctx.fillStyle = C;
-  ctx.beginPath(); ctx.roundRect(46, 34, 10, 4, 2); ctx.fill();
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(55, 36, 2, 3);
-
-  // Back Spines
-  ctx.fillStyle = CD;
-  for (let sp = 20; sp <= 38; sp += 6) {
-    ctx.beginPath();
-    ctx.moveTo(sp, 27); ctx.lineTo(sp + 3, 23); ctx.lineTo(sp + 6, 27);
-    ctx.fill();
-  }
-
-  // Legs & Feet
-  ctx.fillStyle = C;
-  if (pose === 'run1') {
-    ctx.beginPath(); ctx.roundRect(32, 48, 7, 14, 3); ctx.fill();
-    ctx.fillRect(35, 59, 10, 5);
-    ctx.beginPath(); ctx.roundRect(42, 46, 7, 10, 3); ctx.fill();
-    ctx.fillRect(45, 53, 9, 5);
-  } else if (pose === 'run2') {
-    ctx.beginPath(); ctx.roundRect(32, 46, 7, 10, 3); ctx.fill();
-    ctx.fillRect(34, 53, 9, 5);
-    ctx.beginPath(); ctx.roundRect(42, 48, 7, 14, 3); ctx.fill();
-    ctx.fillRect(45, 59, 10, 5);
-  } else if (pose === 'jump') {
-    ctx.beginPath();
-    ctx.roundRect(33, 46, 7, 11, 3);
-    ctx.roundRect(43, 46, 7, 11, 3);
-    ctx.fill();
-    ctx.fillRect(36, 54, 8, 5);
-    ctx.fillRect(46, 54, 8, 5);
-  } else if (pose === 'dead') {
-    ctx.fillRect(30, 56, 14, 6);
-    ctx.fillRect(42, 58, 14, 6);
-  }
-
-  ctx.restore();
-}
-
-// ---------------------------------------------------------------------
-// DETAILED DINO DUCKING
-// ---------------------------------------------------------------------
-function drawDinoDuckDetailed(ctx, ox, oy, pose) {
-  const C = PALETTE.DINO_SKIN;
-  const GR = PALETTE.GAMCHA_RED;
-  const GW = PALETTE.GAMCHA_WHITE;
-
-  ctx.save();
-  ctx.translate(ox, oy);
-
-  ctx.fillStyle = C;
-  ctx.beginPath();
-  ctx.ellipse(40, 24, 28, 12, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.moveTo(16, 22); ctx.lineTo(2, 18); ctx.lineTo(12, 28);
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.roundRect(56, 12, 24, 15, [6, 8, 4, 4]);
-  ctx.fill();
-  ctx.fillRect(72, 20, 10, 6);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath(); ctx.arc(66, 17, 4, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#1e272e';
-  ctx.beginPath(); ctx.arc(67, 17, 2, 0, Math.PI * 2); ctx.fill();
-
-  ctx.fillStyle = GR;
-  ctx.beginPath(); ctx.roundRect(46, 16, 14, 9, 3); ctx.fill();
-  ctx.fillStyle = GW;
-  ctx.fillRect(48, 18, 3, 5);
-  ctx.fillRect(54, 18, 3, 5);
-
-  ctx.fillStyle = GR;
-  ctx.beginPath();
-  ctx.moveTo(46, 18); ctx.quadraticCurveTo(32, 12, 20, 16);
-  ctx.lineTo(18, 21); ctx.quadraticCurveTo(32, 17, 46, 23);
-  ctx.fill();
-
-  ctx.fillStyle = C;
-  if (pose === 'duck1') {
-    ctx.fillRect(28, 30, 8, 9);
-    ctx.fillRect(32, 36, 10, 5);
-    ctx.fillRect(46, 28, 8, 8);
-    ctx.fillRect(50, 33, 9, 5);
-  } else {
-    ctx.fillRect(28, 28, 8, 8);
-    ctx.fillRect(31, 33, 9, 5);
-    ctx.fillRect(46, 30, 8, 9);
-    ctx.fillRect(50, 36, 10, 5);
-  }
-
-  ctx.restore();
 }
 
 // ---------------------------------------------------------------------
@@ -717,7 +572,6 @@ function drawBatteryRickshawSprite(ctx) {
   ctx.beginPath();
   ctx.roundRect(22, 34, 30, 14, 2);
   ctx.fill();
-  // Battery warning symbol
   ctx.fillStyle = '#f1c40f';
   ctx.fillRect(35, 38, 4, 6);
   ctx.fillStyle = '#e74c3c';
@@ -778,29 +632,24 @@ function drawBatteryRickshawSprite(ctx) {
   ctx.fillStyle = '#1e272e';
   ctx.fillRect(52, 26, 10, 4); // saddle
 
-  // Torso
   ctx.fillStyle = PALETTE.SHIRT_RED;
   ctx.beginPath(); ctx.roundRect(48, 16, 12, 14, 3); ctx.fill();
 
-  // Gamcha around neck
-  ctx.fillStyle = PALETTE.GAMCHA_RED;
+  ctx.fillStyle = '#d63031';
   ctx.fillRect(49, 17, 10, 3);
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(52, 17, 3, 2);
 
-  // Head & Cap
   ctx.fillStyle = PALETTE.SKIN_1;
   ctx.beginPath(); ctx.arc(54, 11, 5, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = '#1e272e';
   ctx.beginPath(); ctx.arc(54, 9, 5.2, Math.PI, 0); ctx.fill();
   ctx.fillRect(53, 9, 6, 2);
 
-  // Arms to handlebars
   ctx.strokeStyle = PALETTE.SKIN_1;
   ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(56, 20); ctx.lineTo(68, 18); ctx.stroke();
 
-  // Checkered Lungi (চেক লুঙ্গি)
   ctx.fillStyle = PALETTE.LUNGI_GREEN;
   ctx.beginPath(); ctx.roundRect(50, 28, 14, 14, 2); ctx.fill();
   ctx.fillStyle = PALETTE.LUNGI_CHECK;
@@ -818,11 +667,9 @@ function drawBatteryRickshawSprite(ctx) {
   ctx.moveTo(74, 30); ctx.lineTo(70, 16); ctx.lineTo(66, 17);
   ctx.stroke();
 
-  // Voltmeter display
   ctx.fillStyle = '#00cec9';
   ctx.fillRect(68, 15, 3, 2);
 
-  // Chrome LED Projector Headlight
   ctx.fillStyle = PALETTE.RICKSHAW_CHROME;
   ctx.beginPath(); ctx.roundRect(76, 22, 6, 8, 2); ctx.fill();
   ctx.fillStyle = '#ffffff';
@@ -832,7 +679,6 @@ function drawBatteryRickshawSprite(ctx) {
   drawRickshawWheel(ctx, 16, 46, 10);
   drawRickshawWheel(ctx, 78, 46, 10);
 
-  // Rear Mudflap with painted plate
   ctx.fillStyle = '#2c3e50';
   ctx.fillRect(4, 40, 4, 12);
   ctx.fillStyle = '#e74c3c';
@@ -869,7 +715,7 @@ function drawChandabazDetailedSprite(ctx) {
   // Size: 84 x 66
   ctx.save();
 
-  // 1. MAN 1 (Center): Leader in folded lungi, undershirt, extortion receipt book!
+  // 1. MAN 1 (Center)
   {
     const mx = 30;
     ctx.fillStyle = PALETTE.SKIN_1;
@@ -888,13 +734,11 @@ function drawChandabazDetailedSprite(ctx) {
     ctx.fillRect(mx - 1, 24, 4, 11);
     ctx.fillRect(mx + 13, 24, 4, 10);
 
-    // Extortion Receipt Book ("রসিদ বই")
     ctx.fillStyle = '#fceabb';
     ctx.fillRect(mx + 12, 28, 9, 12);
     ctx.fillStyle = '#2980b9';
     ctx.fillRect(mx + 15, 27, 2, 5);
 
-    // Green folded lungi
     ctx.fillStyle = PALETTE.LUNGI_GREEN;
     ctx.beginPath(); ctx.roundRect(mx + 2, 37, 13, 16, 2); ctx.fill();
     ctx.fillStyle = PALETTE.LUNGI_CHECK;
@@ -909,7 +753,7 @@ function drawChandabazDetailedSprite(ctx) {
     ctx.fillRect(mx + 8, 63, 6, 3);
   }
 
-  // 2. MAN 2 (Left): Waving hand aggressively shouting "চা-পানির খরচ দেন!"
+  // 2. MAN 2 (Left)
   {
     const lx = 4;
     ctx.fillStyle = PALETTE.SKIN_2;
@@ -938,7 +782,7 @@ function drawChandabazDetailedSprite(ctx) {
     ctx.fillRect(lx + 8, 63, 6, 3);
   }
 
-  // 3. MAN 3 (Right): Smartphone flashlight torch
+  // 3. MAN 3 (Right)
   {
     const rx = 58;
     ctx.fillStyle = PALETTE.SKIN_1;
@@ -1007,14 +851,12 @@ function drawElectricPoleDetailed(ctx) {
   ctx.fillRect(7, 34, 3, 4);
   ctx.fillRect(19, 34, 3, 4);
 
-  // Lightning Decal
   ctx.fillStyle = '#f1c40f';
   ctx.beginPath();
   ctx.moveTo(15, 48); ctx.lineTo(13, 54); ctx.lineTo(16, 54); ctx.lineTo(14, 60); ctx.lineTo(18, 52); ctx.lineTo(15, 52);
   ctx.closePath();
   ctx.fill();
 
-  // Tangled hanging optical fiber coils
   ctx.strokeStyle = PALETTE.WIRE_COLOR;
   ctx.lineWidth = 1.5;
   ctx.beginPath();
@@ -1076,14 +918,12 @@ function drawMetroTrainSprite(ctx) {
   ctx.roundRect(0, 3, 160, 25, 4);
   ctx.fill();
 
-  // Green Roof & Red Stripe (National Flag Colors)
   ctx.fillStyle = PALETTE.METRO_TRAIN_GREEN;
   ctx.fillRect(0, 3, 160, 5);
   ctx.fillStyle = PALETTE.METRO_TRAIN_RED;
   ctx.fillRect(0, 23, 160, 3);
   ctx.beginPath(); ctx.arc(14, 16, 4, 0, Math.PI * 2); ctx.fill();
 
-  // Illuminated Panoramic Windows
   for (let wx = 26; wx < 150; wx += 24) {
     ctx.fillStyle = '#2f3542';
     ctx.beginPath(); ctx.roundRect(wx, 10, 18, 11, 2); ctx.fill();
@@ -1102,13 +942,12 @@ function drawDhakaLandmark(ctx, variant) {
   ctx.save();
 
   if (variant === 0) {
-    // 1. Jatiya Sangsad Bhaban (National Parliament House)
+    // 1. Jatiya Sangsad Bhaban
     ctx.fillStyle = PALETTE.PARLIAMENT_CONCRETE;
     ctx.fillRect(25, 60, 130, 100);
     ctx.fillRect(10, 80, 30, 80);
     ctx.fillRect(140, 80, 30, 80);
 
-    // Louis Kahn geometric cutouts
     ctx.fillStyle = '#10141f';
     ctx.beginPath(); ctx.arc(90, 95, 20, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath();
@@ -1116,7 +955,6 @@ function drawDhakaLandmark(ctx, variant) {
     ctx.beginPath();
     ctx.moveTo(130, 105); ctx.lineTo(116, 82); ctx.lineTo(116, 105); ctx.fill();
 
-    // Bangladesh Flag
     ctx.strokeStyle = '#ced6e0';
     ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(90, 60); ctx.lineTo(90, 32); ctx.stroke();
@@ -1126,18 +964,16 @@ function drawDhakaLandmark(ctx, variant) {
     ctx.beginPath(); ctx.arc(96, 36.5, 3, 0, Math.PI * 2); ctx.fill();
 
   } else if (variant === 1) {
-    // 2. Modern Glass Skyscraper (City Centre Motijheel style)
+    // 2. Glass Skyscraper
     ctx.fillStyle = PALETTE.BLDG_FAR_1;
     ctx.fillRect(35, 25, 110, 135);
 
-    // Communications Mast with Aircraft Red Warning Light
     ctx.strokeStyle = '#57606f';
     ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(90, 25); ctx.lineTo(90, 5); ctx.stroke();
     ctx.fillStyle = '#ff4757';
     ctx.beginPath(); ctx.arc(90, 5, 2.5, 0, Math.PI * 2); ctx.fill();
 
-    // Windows
     for (let y = 35; y < 150; y += 15) {
       for (let x = 45; x < 135; x += 18) {
         const isLit = (x * 7 + y * 13) % 4 === 0;
@@ -1151,13 +987,11 @@ function drawDhakaLandmark(ctx, variant) {
     ctx.fillStyle = PALETTE.BLDG_FAR_2;
     ctx.fillRect(20, 45, 140, 115);
 
-    // Blue & Black Gazi Plastic Water Tanks
     ctx.fillStyle = '#0984e3';
     ctx.beginPath(); ctx.roundRect(35, 32, 20, 13, 3); ctx.fill();
     ctx.fillStyle = '#2d3436';
     ctx.beginPath(); ctx.roundRect(60, 34, 16, 11, 2); ctx.fill();
 
-    // Rooftop Tin Shed (চিলেকোঠা)
     ctx.fillStyle = PALETTE.ROOF_TIN;
     ctx.beginPath();
     ctx.moveTo(95, 45); ctx.lineTo(125, 30); ctx.lineTo(155, 45);
@@ -1180,7 +1014,7 @@ function drawDhakaLandmark(ctx, variant) {
       ctx.fillRect(102, y + 3, 6, 4);
     }
   } else {
-    // 4. Commercial Center with Neon Antennas
+    // 4. Commercial Center
     ctx.fillStyle = PALETTE.BLDG_FAR_1;
     ctx.fillRect(30, 40, 120, 120);
     ctx.fillStyle = '#e67e22';
@@ -1204,18 +1038,16 @@ function drawDhakaMidShop(ctx, variant) {
   // Size: 180 x 110
   ctx.save();
 
-  // Brick Building Wall
   ctx.fillStyle = PALETTE.BLDG_MID;
   ctx.fillRect(0, 15, 180, 95);
 
-  // Corrugated Tin Awning (টিনের চালা)
   ctx.fillStyle = PALETTE.ROOF_TIN;
   ctx.beginPath();
   ctx.moveTo(0, 16); ctx.lineTo(90, 6); ctx.lineTo(180, 16);
   ctx.fill();
 
   if (variant === 0) {
-    // 1. Tong Dokan (টংয়ের দোকান) - "মামা'র স্পেশাল চা ও বিস্কুট"
+    // Tong Dokan
     ctx.fillStyle = '#d35400';
     ctx.fillRect(10, 22, 160, 22);
     ctx.fillStyle = '#ffffff';
@@ -1223,21 +1055,18 @@ function drawDhakaMidShop(ctx, variant) {
     ctx.textAlign = 'center';
     ctx.fillText("মামা'র স্পেশাল চা ও বিস্কুট", 90, 38);
 
-    // Weathered Wooden Counter
     ctx.fillStyle = '#4e342e';
     ctx.fillRect(14, 52, 152, 58);
 
-    // Aluminum Tea Kettle (চা’য়ের কেতলি)
     ctx.fillStyle = '#bdc3c7';
     ctx.beginPath(); ctx.ellipse(45, 46, 9, 8, 0, 0, Math.PI * 2); ctx.fill();
     ctx.fillRect(42, 35, 6, 4);
-    // Rising steam
+
     ctx.strokeStyle = 'rgba(255,255,255,0.45)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(45, 34); ctx.quadraticCurveTo(40, 24, 46, 18); ctx.stroke();
 
-    // Biscuit glass jars
     ctx.fillStyle = 'rgba(255,255,255,0.3)';
     ctx.fillRect(72, 34, 14, 18);
     ctx.fillRect(92, 34, 14, 18);
@@ -1245,12 +1074,11 @@ function drawDhakaMidShop(ctx, variant) {
     ctx.fillRect(74, 38, 10, 12);
     ctx.fillRect(94, 38, 10, 12);
 
-    // Bunch of bananas
     ctx.fillStyle = '#f1c40f';
     ctx.fillRect(130, 26, 16, 22);
 
   } else if (variant === 1) {
-    // 2. bKash & Nagad Agent Point (বিকাশ ও নগদ এজেন্ট)
+    // bKash & Nagad
     ctx.fillStyle = PALETTE.SIGN_BKASH;
     ctx.fillRect(10, 20, 78, 24);
     ctx.fillStyle = '#ffffff';
@@ -1263,7 +1091,6 @@ function drawDhakaMidShop(ctx, variant) {
     ctx.fillStyle = '#ffffff';
     ctx.fillText('নগদ', 131, 37);
 
-    // Rolling Shutter
     ctx.fillStyle = '#1e272e';
     ctx.fillRect(14, 50, 152, 60);
     ctx.strokeStyle = '#34495e';
@@ -1273,7 +1100,7 @@ function drawDhakaMidShop(ctx, variant) {
     }
 
   } else if (variant === 2) {
-    // 3. Bhai Bhai Pharmacy (ভাই ভাই ফার্মেসী ও ড্রাগ হাউজ)
+    // Pharmacy
     ctx.fillStyle = PALETTE.SIGN_PHARMACY;
     ctx.fillRect(10, 22, 160, 22);
     ctx.fillStyle = '#ffffff';
@@ -1281,7 +1108,6 @@ function drawDhakaMidShop(ctx, variant) {
     ctx.textAlign = 'center';
     ctx.fillText('ভাই ভাই ফার্মেসী ও ড্রাগ হাউজ', 90, 38);
 
-    // Medical Cross
     ctx.fillStyle = '#2ecc71';
     ctx.fillRect(18, 26, 14, 4);
     ctx.fillRect(23, 21, 4, 14);
@@ -1292,7 +1118,7 @@ function drawDhakaMidShop(ctx, variant) {
     ctx.strokeRect(20, 56, 140, 48);
 
   } else {
-    // 4. Dhaka Biryani & Kacchi House
+    // Dhaka Biryani House
     ctx.fillStyle = '#c0392b';
     ctx.fillRect(10, 22, 160, 22);
     ctx.fillStyle = '#f1c40f';
@@ -1300,14 +1126,12 @@ function drawDhakaMidShop(ctx, variant) {
     ctx.textAlign = 'center';
     ctx.fillText('ঢাকা কাচ্চি ও বিরিয়ানি হাউজ', 90, 38);
 
-    // Giant Traditional Deg (ডেকচি)
     ctx.fillStyle = '#bdc3c7';
     ctx.beginPath(); ctx.ellipse(90, 72, 28, 20, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#c0392b'; // red cloth (সালু কাপড়)
+    ctx.fillStyle = '#c0392b';
     ctx.fillRect(62, 62, 56, 6);
   }
 
-  // Street posters (টু-লেট 'TO-LET', ওয়াজ মাহফিল)
   ctx.fillStyle = '#f1f2f6';
   ctx.fillRect(4, 75, 12, 18);
   ctx.fillStyle = '#e74c3c';
@@ -1408,7 +1232,6 @@ class SoundSynth {
     playBeep(920, t + 0.1, 0.12);
   }
 
-  // Battery Rickshaw Electric Horn & Bell ("প্যাঁক-প্যাঁক" & "ট্রিং-ট্রিং")
   playRickshawHorn() {
     if (this.muted || !this.ctx) return;
     this.ensureContext();
@@ -1438,7 +1261,7 @@ class SoundSynth {
       bOsc.type = 'sine';
       bOsc.frequency.setValueAtTime(1480, start);
       bGain.gain.setValueAtTime(0.2, start);
-      bGain.gain.exponentialRampToValueAtTime(0.01, start + 0.18);
+      bGain.gain.exponentialRampToValueAtTime(0.001, start + 0.18);
       bOsc.connect(bGain);
       bGain.connect(this.masterGain);
       bOsc.start(start);
@@ -1738,11 +1561,10 @@ class DhakaWorld {
     this.landmarksX = 0;
     this.metroViaductX = 0;
     this.metroTrainX = -200;
-    this.metroTrainTimer = 4; // train comes quickly!
+    this.metroTrainTimer = 4;
     this.midShopsX = 0;
     this.roadX = 0;
 
-    // Stars
     this.stars = [];
     for (let i = 0; i < 50; i++) {
       this.stars.push({
@@ -1753,7 +1575,6 @@ class DhakaWorld {
       });
     }
 
-    // Street Features
     this.manholes = [{ x: 180 }, { x: 520 }, { x: 880 }];
     this.puddles = [{ x: 260, w: 42 }, { x: 620, w: 55 }];
   }
@@ -1765,7 +1586,6 @@ class DhakaWorld {
     this.midShopsX = (this.midShopsX - speed * 0.38 * dt) % (180 * 4);
     this.roadX = (this.roadX - speed * dt) % 60;
 
-    // Metro Train movement
     this.metroTrainTimer -= dt;
     if (this.metroTrainTimer <= 0) {
       this.metroTrainX += (speed * 0.35 + 160) * dt;
@@ -1800,7 +1620,7 @@ class DhakaWorld {
   render(ctx) {
     const skyFactor = this.getSkyFactor();
 
-    // 1. SKY GRADIENT
+    // 1. Sky Gradient
     const skyGrad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
     if (skyFactor < 0.5) {
       const t = skyFactor * 2;
@@ -1816,7 +1636,7 @@ class DhakaWorld {
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, W, GROUND_Y);
 
-    // 2. STARS & MOON
+    // 2. Stars & Moon
     if (skyFactor > 0.25) {
       const starAlpha = Math.min(1, (skyFactor - 0.25) / 0.45);
       ctx.fillStyle = PALETTE.STAR;
@@ -1836,28 +1656,25 @@ class DhakaWorld {
       ctx.globalAlpha = 1.0;
     }
 
-    // 3. FAR SKYLINE: DHAKA LANDMARKS (Parliament & High-Rises)
+    // 3. Far Skyline Landmarks
     for (let x = Math.floor(this.landmarksX); x < W + 180; x += 180) {
       const idx = Math.abs(Math.floor(x / 180)) % 4;
       ctx.drawImage(SPRITES.LANDMARKS[idx], x, 30);
     }
 
-    // 4. DHAKA METRO RAIL (MRT LINE 6) ELEVATED VIADUCT
+    // 4. Elevated Metro Rail Viaduct
     const viaductY = 82;
-    // Massive Concrete Piers
     for (let px = Math.floor(this.metroViaductX); px < W + 220; px += 220) {
       ctx.fillStyle = PALETTE.METRO_PILLAR;
       ctx.fillRect(px + 90, viaductY + 12, 16, GROUND_Y - viaductY - 12);
       ctx.fillRect(px + 82, viaductY + 8, 32, 6);
     }
 
-    // Deck & Parapet Walls
     ctx.fillStyle = PALETTE.METRO_VIADUCT;
     ctx.fillRect(0, viaductY, W, 9);
     ctx.fillStyle = PALETTE.METRO_VIADUCT_LIGHT;
     ctx.fillRect(0, viaductY + 9, W, 4);
 
-    // Catenary overhead masts
     ctx.strokeStyle = '#4b5568';
     ctx.lineWidth = 1.5;
     for (let mx = Math.floor(this.metroViaductX); mx < W + 110; mx += 110) {
@@ -1867,18 +1684,17 @@ class DhakaWorld {
       ctx.stroke();
     }
 
-    // Moving Metro Rail Train (MRT-6)
     if (this.metroTrainX > -180 && this.metroTrainX < W + 180) {
       ctx.drawImage(SPRITES.METRO_TRAIN, Math.floor(this.metroTrainX), viaductY - 24);
     }
 
-    // 5. MIDGROUND DHAKA SHOPS & BUILDINGS
+    // 5. Midground Shops
     for (let x = Math.floor(this.midShopsX); x < W + 180; x += 180) {
       const idx = Math.abs(Math.floor(x / 180)) % 4;
       ctx.drawImage(SPRITES.MID_SHOPS[idx], x, GROUND_Y - 110);
     }
 
-    // Tangled Overhead Cables (Dhaka's signature wire maze)
+    // Tangled Overhead Cables
     ctx.strokeStyle = PALETTE.WIRE_COLOR;
     ctx.lineWidth = 1.5;
     for (let wy = 88; wy <= 116; wy += 14) {
@@ -1888,7 +1704,7 @@ class DhakaWorld {
       ctx.stroke();
     }
 
-    // 6. STREET FOOTPATH & BLACK/YELLOW STRIPED CURB
+    // 6. Curb
     ctx.fillStyle = '#2f3542';
     ctx.fillRect(0, GROUND_Y - 6, W, 6);
 
@@ -1902,17 +1718,15 @@ class DhakaWorld {
       ctx.fill();
     }
 
-    // 7. ROAD SURFACE (DARK TEXTURED ASPHALT)
+    // 7. Road Surface
     ctx.fillStyle = PALETTE.ROAD_ASPHALT;
     ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
 
-    // Yellow Dashed Lane Marking
     ctx.fillStyle = PALETTE.ROAD_MARK_YELLOW;
     for (let rx = Math.floor(this.roadX); rx < W; rx += 60) {
       ctx.fillRect(rx, GROUND_Y + 22, 34, 3);
     }
 
-    // WASA Manholes
     this.manholes.forEach(m => {
       ctx.fillStyle = PALETTE.MANHOLE;
       ctx.beginPath();
@@ -1923,7 +1737,6 @@ class DhakaWorld {
       ctx.stroke();
     });
 
-    // Roadside Puddles
     this.puddles.forEach(p => {
       ctx.fillStyle = PALETTE.PUDDLE;
       ctx.beginPath();
@@ -1949,7 +1762,7 @@ function lerpColor(a, b, t) {
 }
 
 // =====================================================================
-// SECTION 7: DINO HERO ENTITY & PHYSICS
+// SECTION 7: EXACT CHROME OFFLINE T-REX HERO ENTITY & PHYSICS
 // =====================================================================
 class DinoHero {
   constructor() {
@@ -1958,7 +1771,7 @@ class DinoHero {
 
   reset() {
     this.x = CONFIG.DINO_X;
-    this.y = GROUND_Y - 70;
+    this.y = GROUND_Y - 90;
     this.vy = 0;
     this.isGrounded = true;
     this.isDucking = false;
@@ -2016,7 +1829,7 @@ class DinoHero {
     this.vy += gravity * dt;
     this.y += this.vy * dt;
 
-    const normalHeight = this.isDucking ? 45 : 70;
+    const normalHeight = 90;
     const targetGroundY = GROUND_Y - normalHeight;
 
     if (this.y >= targetGroundY) {
@@ -2037,7 +1850,7 @@ class DinoHero {
     this.blinkTimer -= dt;
     if (this.blinkTimer <= 0) {
       this.isBlinking = true;
-      if (this.blinkTimer <= -0.14) {
+      if (this.blinkTimer <= -0.15) {
         this.isBlinking = false;
         this.blinkTimer = 2.5 + Math.random() * 3;
       }
@@ -2055,17 +1868,17 @@ class DinoHero {
   getHitbox() {
     if (this.isDucking) {
       return {
-        x: Math.floor(this.x + 10),
-        y: Math.floor(this.y + 12),
-        w: 70,
-        h: 32
+        x: Math.floor(this.x + 12),
+        y: Math.floor(this.y + 44),
+        w: 94,
+        h: 42
       };
     } else {
       return {
-        x: Math.floor(this.x + 12),
-        y: Math.floor(this.y + 6),
-        w: 42,
-        h: 62
+        x: Math.floor(this.x + 16),
+        y: Math.floor(this.y + 12),
+        w: 54,
+        h: 74
       };
     }
   }
@@ -2081,16 +1894,16 @@ class DinoHero {
         sprite = SPRITES.DINO_JUMP;
       } else if (this.isDucking) {
         sprite = this.runFrame === 1 ? SPRITES.DINO_DUCK1 : SPRITES.DINO_DUCK2;
+      } else if (this.isBlinking) {
+        sprite = SPRITES.DINO_BLINK;
       } else {
         sprite = this.runFrame === 1 ? SPRITES.DINO_RUN1 : SPRITES.DINO_RUN2;
       }
 
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
       ctx.drawImage(sprite, Math.floor(this.x), Math.floor(this.y));
-
-      if (this.isBlinking && !this.isDead && !this.isDucking) {
-        ctx.fillStyle = PALETTE.DINO_SKIN;
-        ctx.fillRect(Math.floor(this.x + 40), Math.floor(this.y + 6), 9, 8);
-      }
+      ctx.restore();
     }
 
     if (this.isStunned && !this.isDead) {
@@ -2156,7 +1969,6 @@ class ObstacleManager {
           audio.playElectricZap();
         }
       } else if (obs.type === OBSTACLE_TYPES.BATTERY_RICKSHAW) {
-        // Honk when nearing dino!
         if (!obs.hasHonked && obs.x < 560 && obs.x > 320) {
           obs.hasHonked = true;
           audio.playRickshawHorn();
@@ -2200,7 +2012,6 @@ class ObstacleManager {
     const extraRandomGap = 90 + Math.random() * 210;
     this.nextSpawnDistance = minClearance + extraRandomGap;
 
-    // Battery Rickshaw spawns right from the start!
     const candidates = [OBSTACLE_TYPES.BATTERY_RICKSHAW, OBSTACLE_TYPES.ELECTRIC_POLE, OBSTACLE_TYPES.CHANDABAZ];
     if (this.crowUnlocked) {
       candidates.push(OBSTACLE_TYPES.CROW_LOW);
@@ -2431,17 +2242,16 @@ class LoadSheddingManager {
       mctx.save();
       mctx.globalCompositeOperation = 'destination-out';
 
-      // Dino glowing eyes & gamcha
-      const dex = dino.x + (dino.isDucking ? 72 : 42);
-      const dey = dino.y + (dino.isDucking ? 10 : 8);
+      // Chrome Dino eye cutout in darkness
+      const dex = dino.x + (dino.isDucking ? 98 : 66);
+      const dey = dino.y + (dino.isDucking ? 52 : 18);
       mctx.beginPath();
-      mctx.arc(dex, dey, 20, 0, Math.PI * 2);
+      mctx.arc(dex, dey, 18, 0, Math.PI * 2);
       mctx.fill();
 
       // Obstacles
       for (const obs of obstacleManager.obstacles) {
         if (obs.type === OBSTACLE_TYPES.BATTERY_RICKSHAW) {
-          // Battery Rickshaw LED projector beam
           const hx = obs.x + 80;
           const hy = obs.y + 26;
           mctx.beginPath();
@@ -2785,8 +2595,10 @@ function generateShareScorecard(score, highScore, funnyLine) {
     ctx.fillRect(rx, 420, 45, 5);
   }
 
+  // Draw Exact Chrome T-Rex on scorecard
   ctx.save();
-  ctx.drawImage(SPRITES.DINO_RUN1, 60, 245, 66 * 1.5, 70 * 1.5);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(SPRITES.DINO_RUN1, 60, 240, 66 * 1.5, 71 * 1.5);
   ctx.drawImage(SPRITES.BATTERY_RICKSHAW, 680, 275, 86 * 1.4, 58 * 1.4);
   ctx.restore();
 
@@ -3162,7 +2974,7 @@ class GameApp {
     // 2. Obstacles
     this.obstacles.render(ctx);
 
-    // 3. Dino
+    // 3. Exact Chrome Offline T-Rex
     this.dino.render(ctx);
 
     // 4. Particles
@@ -3217,6 +3029,8 @@ async function bootstrap() {
     console.warn('Font loaded with system fallback:', err);
   }
 
+  // Ensure exact Chrome Offline T-Rex sprite sheet is loaded
+  await loadChromeSpriteSheet();
   initSprites();
   game = new GameApp();
 
