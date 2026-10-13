@@ -1,0 +1,3248 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#060911">
+<title>ডাইনো লোডশেডিং - Dino Load-Shedding (ঢাকা সংস্করণ)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%;
+    background-color: #06080e;
+    color: #f1f2f6;
+    font-family: 'Hind Siliguri', 'Outfit', 'Noto Sans Bengali', sans-serif;
+    overflow: hidden;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, #111a30 0%, #05070c 100%);
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  #game-wrapper {
+    position: relative;
+    width: 95vw;
+    max-width: 1240px;
+    aspect-ratio: 960 / 270;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.92), 0 0 0 1px rgba(255,255,255,0.12);
+    background: #090e1a;
+    overflow: hidden;
+    border-radius: 10px;
+  }
+  @media (max-aspect-ratio: 960/270) {
+    #game-wrapper {
+      width: 98vw;
+      height: auto;
+    }
+  }
+  @media (min-aspect-ratio: 960/270) {
+    #game-wrapper {
+      height: 90vh;
+      width: auto;
+    }
+  }
+  #pixel-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  #overlay-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  /* Top Quick Action Buttons */
+  #hud-controls {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+  }
+  .hud-btn {
+    background: rgba(14, 20, 36, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    color: #f1c40f;
+    border-radius: 6px;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 15px;
+    padding: 0;
+    backdrop-filter: blur(8px);
+    transition: transform 0.1s, background 0.2s, border-color 0.2s;
+  }
+  .hud-btn:hover {
+    background: rgba(30, 44, 76, 0.95);
+    border-color: #f1c40f;
+  }
+  .hud-btn:active {
+    transform: scale(0.92);
+  }
+  .hud-btn svg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+  }
+  /* Modals and UI elements */
+  #action-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6, 9, 16, 0.88);
+    backdrop-filter: blur(8px);
+    z-index: 20;
+    padding: 18px;
+    text-align: center;
+  }
+  #action-modal.visible {
+    display: flex;
+  }
+  .modal-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #f1c40f;
+    text-shadow: 0 2px 14px rgba(241, 196, 15, 0.5);
+    margin-bottom: 6px;
+  }
+  .modal-subtitle {
+    font-size: 18px;
+    color: #ff6b6b;
+    font-weight: 600;
+    margin-bottom: 12px;
+    max-width: 86%;
+    line-height: 1.4;
+  }
+  .modal-stats {
+    font-size: 17px;
+    color: #e2e8f0;
+    margin-bottom: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 6px 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .modal-buttons {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .btn-primary, .btn-secondary {
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 10px 22px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.15s ease-in-out;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(231, 76, 60, 0.45);
+  }
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #ff5252, #e74c3c);
+    transform: translateY(-2px);
+  }
+  .btn-secondary {
+    background: linear-gradient(135deg, #2c3e50, #1a252f);
+    color: #ecf0f1;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  }
+  .btn-secondary:hover {
+    background: linear-gradient(135deg, #3d566e, #2c3e50);
+    transform: translateY(-2px);
+  }
+  /* Toast notification */
+  #toast {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    background: rgba(39, 174, 96, 0.95);
+    color: #ffffff;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    pointer-events: none;
+    opacity: 0;
+    transition: transform 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.25s;
+    z-index: 30;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  }
+  #toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+</style>
+</head>
+<body>
+
+<div id="game-wrapper">
+  <canvas id="pixel-canvas" width="960" height="270"></canvas>
+  <canvas id="overlay-canvas"></canvas>
+
+  <div id="hud-controls">
+    <button id="btn-pause" class="hud-btn" title="খেলা থামান (P)" aria-label="Pause">
+      <svg id="icon-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+      <svg id="icon-play" viewBox="0 0 24 24" style="display:none;"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+    <button id="btn-mute" class="hud-btn" title="শব্দ অন/অফ (M)" aria-label="Sound Toggle">
+      <svg id="icon-sound" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+      <svg id="icon-muted" viewBox="0 0 24 24" style="display:none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27l4.73 4.73H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+    </button>
+  </div>
+
+  <div id="action-modal">
+    <div id="modal-title" class="modal-title">ডাইনো লোডশেডিং</div>
+    <div id="modal-subtitle" class="modal-subtitle"></div>
+    <div id="modal-stats" class="modal-stats"></div>
+    <div class="modal-buttons">
+      <button id="btn-restart" class="btn-primary">
+        <svg style="width:16px;height:16px;fill:currentColor" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        <span>আবার খেলুন (Restart)</span>
+      </button>
+      <button id="btn-share" class="btn-secondary">
+        <svg style="width:16px;height:16px;fill:currentColor" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+        <span>স্কোর কার্ড শেয়ার করুন</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="toast">কার্ড কপি করা হয়েছে!</div>
+</div>
+
+<script>
+'use strict';
+
+// =====================================================================
+// SECTION 1: HIGH-RES CONFIGURATION & CONSTANTS (960 x 270)
+// =====================================================================
+const W = 960;
+const H = 270;
+const GROUND_Y = 222;
+
+const CONFIG = {
+  STEP: 1 / 60,
+  MAX_FRAME: 0.1,
+  INITIAL_SPEED: 320,     // px / s at 960 res
+  MAX_SPEED: 840,         // px / s
+  ACCELERATION: 1.65,     // px / s^2
+
+  // Dino Physics (Snappy & Responsive)
+  DINO_X: 78,
+  JUMP_IMPULSE: -840,     // Initial jump velocity px/s
+  VARIABLE_JUMP_CUT: -315,// Clamped velocity if released early
+  GRAVITY: 2580,          // Normal gravity px/s^2
+  DUCK_GRAVITY: 6300,     // Snappy drop on down-arrow in air
+  STUN_DURATION: 1.5,     // Seconds stunned after hitting চাঁদাবাজ
+
+  // Load-Shedding Timers
+  LS_MIN_INTERVAL: 24,
+  LS_MAX_INTERVAL: 42,
+  LS_WARNING_TIME: 1.2,
+  LS_BASE_DURATION: 3.5,
+  LS_MAX_DURATION: 7.5,
+
+  // Day / Night cycle length (seconds)
+  DAY_NIGHT_CYCLE: 95
+};
+
+// =====================================================================
+// SECTION 2: RICH COLOR PALETTE & BANGLA DICTIONARY
+// =====================================================================
+const PALETTE = {
+  // Atmosphere Skies
+  SKY_DAY_TOP: '#2980b9',
+  SKY_DAY_BOTTOM: '#8ec5fc',
+  SKY_DUSK_TOP: '#38133e',
+  SKY_DUSK_MID: '#b33939',
+  SKY_DUSK_BOTTOM: '#f39c12',
+  SKY_NIGHT_TOP: '#050811',
+  SKY_NIGHT_BOTTOM: '#121829',
+  MOON: '#fcf8dc',
+  MOON_GLOW: 'rgba(252, 248, 220, 0.25)',
+  STAR: '#fffab3',
+
+  // Dhaka Metro Rail (MRT Line 6)
+  METRO_VIADUCT: '#485460',
+  METRO_VIADUCT_LIGHT: '#57606f',
+  METRO_PILLAR: '#2f3542',
+  METRO_TRAIN_SILVER: '#dfe4ea',
+  METRO_TRAIN_GREEN: '#006a4e', // Bangladesh National Green
+  METRO_TRAIN_RED: '#f42a41',   // Bangladesh National Red
+  METRO_WINDOW_LIT: '#fff4b8',
+
+  // Dhaka Buildings & Landmarks
+  PARLIAMENT_CONCRETE: '#242b3d',
+  BLDG_FAR_1: '#151c2b',
+  BLDG_FAR_2: '#1b2336',
+  BLDG_MID: '#252e42',
+  BLDG_WINDOW_ON: '#ffd269',
+  BLDG_WINDOW_OFF: '#131824',
+  CANDLE_GLOW: '#ff9f43',
+  ROOF_TIN: '#4b5568',
+  SIGN_BKASH: '#e2136e',       // Iconic bKash Magenta
+  SIGN_NAGAD: '#f7941d',       // Iconic Nagad Orange
+  SIGN_PHARMACY: '#27ae60',
+  WIRE_COLOR: '#0d111a',
+
+  // Ground, Asphalt & Street
+  CURB_YELLOW: '#f1c40f',
+  CURB_BLACK: '#1e272e',
+  ROAD_ASPHALT: '#181b22',
+  ROAD_MARK_YELLOW: '#eccc68',
+  MANHOLE: '#2f3542',
+  PUDDLE: '#2c3e50',
+  PUDDLE_REFLECT: '#576574',
+
+  // Dino Hero
+  DINO_SKIN: '#4b5360',
+  DINO_SHADOW: '#2d333b',
+  DINO_BELLY: '#747d8c',
+  GAMCHA_RED: '#d63031',
+  GAMCHA_WHITE: '#ffffff',
+
+  // Electric Utility Pole & Transformer
+  POLE_CONCRETE: '#747d8c',
+  TRANSFORMER_BODY: '#2f3542',
+  SPARK: '#ffeaa7',
+
+  // Battery Rickshaw (ব্যাটারি অটোরিকশা)
+  RICKSHAW_FRAME: '#0984e3',     // Brilliant royal blue body
+  RICKSHAW_HOOD_RED: '#d63031',   // Red & Yellow vinyl canopy
+  RICKSHAW_HOOD_YELLOW: '#f1c40f',
+  RICKSHAW_BATTERY_BOX: '#1e272e',
+  RICKSHAW_CHROME: '#dfe4ea',
+  RICKSHAW_FLOWER: '#fd79a8',
+
+  // চাঁদাবাজ Group
+  SKIN_1: '#b8734a',
+  SKIN_2: '#935532',
+  LUNGI_GREEN: '#10ac84',
+  LUNGI_BLUE: '#2e86de',
+  LUNGI_CHECK: '#f1f2f6',
+  SHIRT_RED: '#ee5253',
+  SHIRT_PURPLE: '#8854d0',
+  TAKA_500: '#1dd1a1',           // 500 Taka Green Note
+  TAKA_1000: '#ff6b6b',          // 1000 Taka Red Note
+
+  // Crow (দাঁড়কাক)
+  CROW_BODY: '#1e2024',
+  CROW_FEATHER: '#343840',
+  CROW_EYE: '#ff9f43',
+
+  ALERT_RED: '#ff4757',
+  GOLD_STAR: '#f1c40f'
+};
+
+const BN_DIGITS = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+function toBangla(n) {
+  return String(Math.floor(n)).replace(/\d/g, d => BN_DIGITS[d]);
+}
+
+const GAME_OVER_LINES = [
+  "ব্যাটারি রিকশার তো ব্রেক নাই! মামার ধাক্কায় ডাইনো একেবারে চিৎপটাং!",
+  "মামা কইছিল সাইড দিতে, ডাইনো শুনে নাই! ব্যাটারি রিকশার সাথে গুঁতো!",
+  "ফুল চার্জে চলা ব্যাটারি রিকশার গতির সাথে ডাইনো পারে নাই ভাই!",
+  "চাঁদাবাজদের চা-পানির খরচ না দিলে রাস্তা পার হওয়া নিষেধ!",
+  "ট্রান্সফরমার বাস্ট হইয়া আগুন! ডাইনোর ফিউজও সাথে সাথে উড়ে গেছে!",
+  "আজকে ৩ ঘণ্টা লোডশেডিং, অন্ধকারে ডাইনো আর বাঁচতে পারল না!",
+  "ডাইনো তো লাখ বছর আগেই বিলুপ্ত, ঢাকার ট্রাফিকে এসে ফাইনাল বিলুপ্ত!",
+  "ব্যাটারি রিকশার প্রজেক্টর হেডলাইটের আলোয় ডাইনোর চোখ ধাঁধিয়ে গেল!",
+  "পোল ছিল সোজা, মাথা হইলো বাঁকা! শর্ট সার্কিট খেয়ে প্যারালাইজড!",
+  "কাকের সাথে গুঁতো খেয়ে পতন! ডাইনো আর উড়তে পারল না ভাই!",
+  "ডাইনোর গামছা উড়ে গেছে, চাঁদাবাজরা সব টাকাপয়সা কেড়ে নিছে!",
+  "মামা একটু আস্তে চালান! ব্যাটারি রিকশার ধাক্কায় ডাইনো কুপোকাত!"
+];
+
+function createOffscreenCanvas(width, height) {
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(width);
+  canvas.height = Math.round(height);
+  const ctx = canvas.getContext('2d');
+  return { canvas, ctx };
+}
+
+// =====================================================================
+// SECTION 3: SPRITE FACTORY (PRE-RENDERING TO BUFFERS)
+// =====================================================================
+const SPRITES = {};
+
+function initSprites() {
+  // 1. DINO RUN 1 (66 x 70)
+  {
+    const { canvas, ctx } = createOffscreenCanvas(66, 70);
+    drawDinoDetailed(ctx, 0, 0, 'run1');
+    SPRITES.DINO_RUN1 = canvas;
+  }
+  // 2. DINO RUN 2 (66 x 70)
+  {
+    const { canvas, ctx } = createOffscreenCanvas(66, 70);
+    drawDinoDetailed(ctx, 0, 0, 'run2');
+    SPRITES.DINO_RUN2 = canvas;
+  }
+  // 3. DINO JUMP (66 x 70)
+  {
+    const { canvas, ctx } = createOffscreenCanvas(66, 70);
+    drawDinoDetailed(ctx, 0, 0, 'jump');
+    SPRITES.DINO_JUMP = canvas;
+  }
+  // 4. DINO DUCK 1 (88 x 45)
+  {
+    const { canvas, ctx } = createOffscreenCanvas(88, 45);
+    drawDinoDuckDetailed(ctx, 0, 0, 'duck1');
+    SPRITES.DINO_DUCK1 = canvas;
+  }
+  // 5. DINO DUCK 2 (88 x 45)
+  {
+    const { canvas, ctx } = createOffscreenCanvas(88, 45);
+    drawDinoDuckDetailed(ctx, 0, 0, 'duck2');
+    SPRITES.DINO_DUCK2 = canvas;
+  }
+  // 6. DINO DEAD (66 x 70)
+  {
+    const { canvas, ctx } = createOffscreenCanvas(66, 70);
+    drawDinoDetailed(ctx, 0, 0, 'dead');
+    SPRITES.DINO_DEAD = canvas;
+  }
+
+  // 7. BATTERY RICKSHAW (ব্যাটারি অটোরিকশা) - 86 x 58
+  {
+    const { canvas, ctx } = createOffscreenCanvas(86, 58);
+    drawBatteryRickshawSprite(ctx);
+    SPRITES.BATTERY_RICKSHAW = canvas;
+  }
+
+  // 8. CHANDABAZ GROUP (চাঁদাবাজ সিন্ডিকেট) - 84 x 66
+  {
+    const { canvas, ctx } = createOffscreenCanvas(84, 66);
+    drawChandabazDetailedSprite(ctx);
+    SPRITES.CHANDABAZ = canvas;
+  }
+
+  // 9. ELECTRIC POLE & TRANSFORMER - 30 x 105
+  {
+    const { canvas, ctx } = createOffscreenCanvas(30, 105);
+    drawElectricPoleDetailed(ctx);
+    SPRITES.ELECTRIC_POLE = canvas;
+  }
+
+  // 10. DHAKA CROW (দাঁড়কাক) - 48 x 36
+  {
+    const { canvas: c1, ctx: ctx1 } = createOffscreenCanvas(48, 36);
+    drawCrowDetailed(ctx1, 1);
+    SPRITES.CROW1 = c1;
+
+    const { canvas: c2, ctx: ctx2 } = createOffscreenCanvas(48, 36);
+    drawCrowDetailed(ctx2, 2);
+    SPRITES.CROW2 = c2;
+  }
+
+  // 11. METRO RAIL TRAIN CAR (160 x 30)
+  {
+    const { canvas, ctx } = createOffscreenCanvas(160, 30);
+    drawMetroTrainSprite(ctx);
+    SPRITES.METRO_TRAIN = canvas;
+  }
+
+  // 12. FAR SKYLINE LANDMARKS (Jatiya Sangsad Parliament & Towers)
+  SPRITES.LANDMARKS = [];
+  for (let i = 0; i < 4; i++) {
+    const { canvas, ctx } = createOffscreenCanvas(180, 160);
+    drawDhakaLandmark(ctx, i);
+    SPRITES.LANDMARKS.push(canvas);
+  }
+
+  // 13. MIDGROUND DHAKA SHOPS (Tong dokan, bKash/Nagad agent, Pharmacy, Biryani)
+  SPRITES.MID_SHOPS = [];
+  for (let i = 0; i < 4; i++) {
+    const { canvas, ctx } = createOffscreenCanvas(180, 110);
+    drawDhakaMidShop(ctx, i);
+    SPRITES.MID_SHOPS.push(canvas);
+  }
+}
+
+// ---------------------------------------------------------------------
+// DETAILED DINO HERO WITH FLUTTERING GAMCHA
+// ---------------------------------------------------------------------
+function drawDinoDetailed(ctx, ox, oy, pose) {
+  const C = PALETTE.DINO_SKIN;
+  const CD = PALETTE.DINO_SHADOW;
+  const CB = PALETTE.DINO_BELLY;
+  const GR = PALETTE.GAMCHA_RED;
+  const GW = PALETTE.GAMCHA_WHITE;
+
+  ctx.save();
+  ctx.translate(ox, oy);
+
+  // Tail
+  ctx.fillStyle = C;
+  ctx.beginPath();
+  ctx.moveTo(34, 38);
+  ctx.quadraticCurveTo(10, 38, 2, 30);
+  ctx.quadraticCurveTo(8, 44, 26, 48);
+  ctx.fill();
+
+  // Torso / Belly
+  ctx.fillStyle = C;
+  ctx.beginPath();
+  ctx.ellipse(36, 38, 18, 16, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Belly soft tone
+  ctx.fillStyle = CB;
+  ctx.beginPath();
+  ctx.ellipse(40, 42, 10, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Neck & Head
+  ctx.fillStyle = C;
+  ctx.beginPath();
+  ctx.moveTo(38, 26);
+  ctx.lineTo(44, 12);
+  ctx.lineTo(60, 10);
+  ctx.quadraticCurveTo(65, 14, 64, 20);
+  ctx.lineTo(52, 22); // mouth gap
+  ctx.lineTo(58, 28);
+  ctx.quadraticCurveTo(50, 32, 42, 34);
+  ctx.closePath();
+  ctx.fill();
+
+  // Snout upper jaw
+  ctx.beginPath();
+  ctx.roundRect(46, 8, 18, 12, [6, 8, 2, 2]);
+  ctx.fill();
+
+  // Lower Jaw
+  ctx.beginPath();
+  ctx.roundRect(48, 22, 12, 6, [2, 2, 4, 4]);
+  ctx.fill();
+
+  // Sharp Teeth
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(52, 20); ctx.lineTo(54, 23); ctx.lineTo(56, 20);
+  ctx.moveTo(58, 20); ctx.lineTo(60, 23); ctx.lineTo(62, 20);
+  ctx.fill();
+
+  // Eye
+  if (pose === 'dead') {
+    ctx.strokeStyle = PALETTE.ALERT_RED;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(50, 11); ctx.lineTo(56, 17);
+    ctx.moveTo(56, 11); ctx.lineTo(50, 17);
+    ctx.stroke();
+  } else {
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.ellipse(53, 14, 4.5, 4.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#1e272e';
+    ctx.beginPath(); ctx.ellipse(54.5, 14, 2.2, 2.8, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(55, 12.8, 1, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // Realistic Fluttering Bangladeshi Gamcha (লাল-সাদা গামছা)
+  ctx.fillStyle = GR;
+  ctx.beginPath();
+  ctx.roundRect(36, 22, 14, 8, 3);
+  ctx.fill();
+  ctx.fillStyle = GW;
+  ctx.fillRect(38, 24, 3, 4);
+  ctx.fillRect(44, 24, 3, 4);
+
+  // Fluttering Gamcha Tails behind neck
+  const wave = pose === 'run1' ? 4 : (pose === 'run2' ? -3 : 0);
+  ctx.fillStyle = GR;
+  ctx.beginPath();
+  ctx.moveTo(36, 24);
+  ctx.quadraticCurveTo(24, 20 + wave, 14, 24 - wave);
+  ctx.lineTo(12, 29 - wave);
+  ctx.quadraticCurveTo(24, 26 + wave, 36, 29);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = GW;
+  ctx.fillRect(12, 24 - wave, 3, 5);
+  ctx.fillRect(20, 22 + wave, 2, 5);
+
+  // Tiny Claws
+  ctx.fillStyle = C;
+  ctx.beginPath(); ctx.roundRect(46, 34, 10, 4, 2); ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(55, 36, 2, 3);
+
+  // Back Spines
+  ctx.fillStyle = CD;
+  for (let sp = 20; sp <= 38; sp += 6) {
+    ctx.beginPath();
+    ctx.moveTo(sp, 27); ctx.lineTo(sp + 3, 23); ctx.lineTo(sp + 6, 27);
+    ctx.fill();
+  }
+
+  // Legs & Feet
+  ctx.fillStyle = C;
+  if (pose === 'run1') {
+    ctx.beginPath(); ctx.roundRect(32, 48, 7, 14, 3); ctx.fill();
+    ctx.fillRect(35, 59, 10, 5);
+    ctx.beginPath(); ctx.roundRect(42, 46, 7, 10, 3); ctx.fill();
+    ctx.fillRect(45, 53, 9, 5);
+  } else if (pose === 'run2') {
+    ctx.beginPath(); ctx.roundRect(32, 46, 7, 10, 3); ctx.fill();
+    ctx.fillRect(34, 53, 9, 5);
+    ctx.beginPath(); ctx.roundRect(42, 48, 7, 14, 3); ctx.fill();
+    ctx.fillRect(45, 59, 10, 5);
+  } else if (pose === 'jump') {
+    ctx.beginPath();
+    ctx.roundRect(33, 46, 7, 11, 3);
+    ctx.roundRect(43, 46, 7, 11, 3);
+    ctx.fill();
+    ctx.fillRect(36, 54, 8, 5);
+    ctx.fillRect(46, 54, 8, 5);
+  } else if (pose === 'dead') {
+    ctx.fillRect(30, 56, 14, 6);
+    ctx.fillRect(42, 58, 14, 6);
+  }
+
+  ctx.restore();
+}
+
+// ---------------------------------------------------------------------
+// DETAILED DINO DUCKING
+// ---------------------------------------------------------------------
+function drawDinoDuckDetailed(ctx, ox, oy, pose) {
+  const C = PALETTE.DINO_SKIN;
+  const GR = PALETTE.GAMCHA_RED;
+  const GW = PALETTE.GAMCHA_WHITE;
+
+  ctx.save();
+  ctx.translate(ox, oy);
+
+  ctx.fillStyle = C;
+  ctx.beginPath();
+  ctx.ellipse(40, 24, 28, 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(16, 22); ctx.lineTo(2, 18); ctx.lineTo(12, 28);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.roundRect(56, 12, 24, 15, [6, 8, 4, 4]);
+  ctx.fill();
+  ctx.fillRect(72, 20, 10, 6);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(66, 17, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#1e272e';
+  ctx.beginPath(); ctx.arc(67, 17, 2, 0, Math.PI * 2); ctx.fill();
+
+  ctx.fillStyle = GR;
+  ctx.beginPath(); ctx.roundRect(46, 16, 14, 9, 3); ctx.fill();
+  ctx.fillStyle = GW;
+  ctx.fillRect(48, 18, 3, 5);
+  ctx.fillRect(54, 18, 3, 5);
+
+  ctx.fillStyle = GR;
+  ctx.beginPath();
+  ctx.moveTo(46, 18); ctx.quadraticCurveTo(32, 12, 20, 16);
+  ctx.lineTo(18, 21); ctx.quadraticCurveTo(32, 17, 46, 23);
+  ctx.fill();
+
+  ctx.fillStyle = C;
+  if (pose === 'duck1') {
+    ctx.fillRect(28, 30, 8, 9);
+    ctx.fillRect(32, 36, 10, 5);
+    ctx.fillRect(46, 28, 8, 8);
+    ctx.fillRect(50, 33, 9, 5);
+  } else {
+    ctx.fillRect(28, 28, 8, 8);
+    ctx.fillRect(31, 33, 9, 5);
+    ctx.fillRect(46, 30, 8, 9);
+    ctx.fillRect(50, 36, 10, 5);
+  }
+
+  ctx.restore();
+}
+
+// ---------------------------------------------------------------------
+// AUTHENTIC DHAKA BATTERY RICKSHAW (ব্যাটারি অটোরিকশা / ইজিবাইক)
+// ---------------------------------------------------------------------
+function drawBatteryRickshawSprite(ctx) {
+  // Size: 86 x 58
+  ctx.save();
+
+  // 1. Steel Tubular Frame
+  ctx.strokeStyle = '#2d3436';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(12, 45); ctx.lineTo(44, 45); ctx.lineTo(66, 45);
+  ctx.lineTo(76, 28); ctx.lineTo(80, 46);
+  ctx.stroke();
+
+  // Heavy Battery Box beneath seat
+  ctx.fillStyle = PALETTE.RICKSHAW_BATTERY_BOX;
+  ctx.beginPath();
+  ctx.roundRect(22, 34, 30, 14, 2);
+  ctx.fill();
+  // Battery warning symbol
+  ctx.fillStyle = '#f1c40f';
+  ctx.fillRect(35, 38, 4, 6);
+  ctx.fillStyle = '#e74c3c';
+  ctx.fillRect(36, 40, 2, 2);
+
+  // 2. Passenger Carriage & Seat
+  ctx.fillStyle = PALETTE.RICKSHAW_FRAME; // Royal Blue
+  ctx.beginPath();
+  ctx.roundRect(8, 22, 40, 16, [4, 4, 2, 2]);
+  ctx.fill();
+
+  // Seat cushion (Red & Gold)
+  ctx.fillStyle = '#c0392b';
+  ctx.fillRect(16, 24, 26, 6);
+  ctx.fillStyle = '#f39c12';
+  ctx.fillRect(18, 25, 22, 2);
+
+  // Armrest railing
+  ctx.strokeStyle = PALETTE.RICKSHAW_CHROME;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(10, 22); ctx.lineTo(10, 14); ctx.lineTo(38, 14); ctx.lineTo(38, 22);
+  ctx.stroke();
+
+  // 3. Dhaka Rickshaw Hood / Canopy with Rickshaw Art (রিকশা আর্ট)
+  ctx.fillStyle = PALETTE.RICKSHAW_HOOD_RED;
+  ctx.beginPath();
+  ctx.moveTo(6, 22);
+  ctx.quadraticCurveTo(8, 4, 30, 2);
+  ctx.quadraticCurveTo(46, 4, 48, 16);
+  ctx.lineTo(6, 22);
+  ctx.closePath();
+  ctx.fill();
+
+  // Yellow scallop band
+  ctx.fillStyle = PALETTE.RICKSHAW_HOOD_YELLOW;
+  ctx.beginPath();
+  ctx.moveTo(8, 16);
+  ctx.quadraticCurveTo(10, 8, 30, 6);
+  ctx.quadraticCurveTo(42, 8, 44, 16);
+  ctx.lineTo(40, 19);
+  ctx.quadraticCurveTo(30, 10, 10, 19);
+  ctx.fill();
+
+  // Floral Rickshaw Painting Motif
+  ctx.fillStyle = PALETTE.RICKSHAW_FLOWER;
+  ctx.beginPath(); ctx.arc(28, 11, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#2ecc71';
+  ctx.fillRect(23, 11, 3, 2); ctx.fillRect(31, 11, 3, 2);
+
+  // Tassels / fringes (ঝালর)
+  ctx.fillStyle = '#f1c40f';
+  for (let fx = 12; fx <= 44; fx += 5) {
+    ctx.fillRect(fx, 20, 2, 4);
+  }
+
+  // 4. Rickshaw Driver (মামা) in Checkered Lungi
+  ctx.fillStyle = '#1e272e';
+  ctx.fillRect(52, 26, 10, 4); // saddle
+
+  // Torso
+  ctx.fillStyle = PALETTE.SHIRT_RED;
+  ctx.beginPath(); ctx.roundRect(48, 16, 12, 14, 3); ctx.fill();
+
+  // Gamcha around neck
+  ctx.fillStyle = PALETTE.GAMCHA_RED;
+  ctx.fillRect(49, 17, 10, 3);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(52, 17, 3, 2);
+
+  // Head & Cap
+  ctx.fillStyle = PALETTE.SKIN_1;
+  ctx.beginPath(); ctx.arc(54, 11, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#1e272e';
+  ctx.beginPath(); ctx.arc(54, 9, 5.2, Math.PI, 0); ctx.fill();
+  ctx.fillRect(53, 9, 6, 2);
+
+  // Arms to handlebars
+  ctx.strokeStyle = PALETTE.SKIN_1;
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(56, 20); ctx.lineTo(68, 18); ctx.stroke();
+
+  // Checkered Lungi (চেক লুঙ্গি)
+  ctx.fillStyle = PALETTE.LUNGI_GREEN;
+  ctx.beginPath(); ctx.roundRect(50, 28, 14, 14, 2); ctx.fill();
+  ctx.fillStyle = PALETTE.LUNGI_CHECK;
+  ctx.fillRect(53, 29, 2, 12);
+  ctx.fillRect(58, 29, 2, 12);
+  ctx.fillRect(50, 34, 14, 1.5);
+
+  ctx.fillStyle = PALETTE.SKIN_1;
+  ctx.fillRect(60, 40, 4, 6);
+
+  // 5. Handlebars & High-power LED Projector Headlight
+  ctx.strokeStyle = PALETTE.RICKSHAW_CHROME;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(74, 30); ctx.lineTo(70, 16); ctx.lineTo(66, 17);
+  ctx.stroke();
+
+  // Voltmeter display
+  ctx.fillStyle = '#00cec9';
+  ctx.fillRect(68, 15, 3, 2);
+
+  // Chrome LED Projector Headlight
+  ctx.fillStyle = PALETTE.RICKSHAW_CHROME;
+  ctx.beginPath(); ctx.roundRect(76, 22, 6, 8, 2); ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(79, 23, 3, 6);
+
+  // 6. Spoked Wheels
+  drawRickshawWheel(ctx, 16, 46, 10);
+  drawRickshawWheel(ctx, 78, 46, 10);
+
+  // Rear Mudflap with painted plate
+  ctx.fillStyle = '#2c3e50';
+  ctx.fillRect(4, 40, 4, 12);
+  ctx.fillStyle = '#e74c3c';
+  ctx.fillRect(5, 43, 2, 4);
+
+  ctx.restore();
+}
+
+function drawRickshawWheel(ctx, cx, cy, r) {
+  ctx.fillStyle = '#1e272e';
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+
+  ctx.strokeStyle = '#dfe4ea';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(cx, cy, r - 2, 0, Math.PI * 2); ctx.stroke();
+
+  ctx.fillStyle = '#e74c3c';
+  ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+  ctx.lineWidth = 1;
+  for (let a = 0; a < Math.PI * 2; a += Math.PI / 3) {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(a) * (r - 2), cy + Math.sin(a) * (r - 2));
+    ctx.stroke();
+  }
+}
+
+// ---------------------------------------------------------------------
+// DETAILED CHANDABAZ GANG (চাঁদাবাজ সিন্ডিকেট)
+// ---------------------------------------------------------------------
+function drawChandabazDetailedSprite(ctx) {
+  // Size: 84 x 66
+  ctx.save();
+
+  // 1. MAN 1 (Center): Leader in folded lungi, undershirt, extortion receipt book!
+  {
+    const mx = 30;
+    ctx.fillStyle = PALETTE.SKIN_1;
+    ctx.beginPath(); ctx.arc(mx + 8, 14, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#1e272e';
+    ctx.beginPath(); ctx.arc(mx + 8, 11, 7.5, Math.PI, 0); ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.roundRect(mx + 2, 21, 13, 16, 2); ctx.fill();
+
+    ctx.strokeStyle = '#f1c40f';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(mx + 8, 22, 4, 0, Math.PI); ctx.stroke();
+
+    ctx.fillStyle = PALETTE.SKIN_1;
+    ctx.fillRect(mx - 1, 24, 4, 11);
+    ctx.fillRect(mx + 13, 24, 4, 10);
+
+    // Extortion Receipt Book ("রসিদ বই")
+    ctx.fillStyle = '#fceabb';
+    ctx.fillRect(mx + 12, 28, 9, 12);
+    ctx.fillStyle = '#2980b9';
+    ctx.fillRect(mx + 15, 27, 2, 5);
+
+    // Green folded lungi
+    ctx.fillStyle = PALETTE.LUNGI_GREEN;
+    ctx.beginPath(); ctx.roundRect(mx + 2, 37, 13, 16, 2); ctx.fill();
+    ctx.fillStyle = PALETTE.LUNGI_CHECK;
+    ctx.fillRect(mx + 5, 38, 2, 14);
+    ctx.fillRect(mx + 10, 38, 2, 14);
+
+    ctx.fillStyle = PALETTE.SKIN_1;
+    ctx.fillRect(mx + 4, 53, 3, 10);
+    ctx.fillRect(mx + 10, 53, 3, 10);
+    ctx.fillStyle = '#2d3436';
+    ctx.fillRect(mx + 2, 63, 6, 3);
+    ctx.fillRect(mx + 8, 63, 6, 3);
+  }
+
+  // 2. MAN 2 (Left): Waving hand aggressively shouting "চা-পানির খরচ দেন!"
+  {
+    const lx = 4;
+    ctx.fillStyle = PALETTE.SKIN_2;
+    ctx.beginPath(); ctx.arc(lx + 8, 17, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#111';
+    ctx.beginPath(); ctx.arc(lx + 8, 14, 7.5, Math.PI, 0); ctx.fill();
+
+    ctx.fillStyle = PALETTE.SHIRT_RED;
+    ctx.beginPath(); ctx.roundRect(lx + 2, 24, 13, 16, 2); ctx.fill();
+
+    ctx.fillStyle = PALETTE.SKIN_2;
+    ctx.fillRect(lx - 2, 25, 5, 4);
+    ctx.beginPath(); ctx.arc(lx - 4, 25, 3.5, 0, Math.PI * 2); ctx.fill();
+
+    ctx.fillStyle = PALETTE.LUNGI_BLUE;
+    ctx.beginPath(); ctx.roundRect(lx + 2, 40, 13, 20, 2); ctx.fill();
+    ctx.fillStyle = PALETTE.LUNGI_CHECK;
+    ctx.fillRect(lx + 5, 41, 2, 18);
+    ctx.fillRect(lx + 10, 41, 2, 18);
+
+    ctx.fillStyle = PALETTE.SKIN_2;
+    ctx.fillRect(lx + 4, 59, 3, 4);
+    ctx.fillRect(lx + 9, 59, 3, 4);
+    ctx.fillStyle = '#333';
+    ctx.fillRect(lx + 2, 63, 6, 3);
+    ctx.fillRect(lx + 8, 63, 6, 3);
+  }
+
+  // 3. MAN 3 (Right): Smartphone flashlight torch
+  {
+    const rx = 58;
+    ctx.fillStyle = PALETTE.SKIN_1;
+    ctx.beginPath(); ctx.arc(rx + 8, 15, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#222';
+    ctx.beginPath(); ctx.arc(rx + 8, 12, 7.5, Math.PI, 0); ctx.fill();
+
+    ctx.fillStyle = PALETTE.SHIRT_PURPLE;
+    ctx.beginPath(); ctx.roundRect(rx + 2, 22, 13, 16, 2); ctx.fill();
+
+    ctx.fillStyle = PALETTE.SKIN_1;
+    ctx.fillRect(rx - 1, 26, 4, 8);
+    ctx.fillStyle = '#111';
+    ctx.fillRect(rx - 4, 28, 4, 7);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(rx - 4, 28, 1.5, 1.5);
+
+    ctx.fillStyle = '#5d4037';
+    ctx.beginPath(); ctx.roundRect(rx + 2, 38, 13, 20, 2); ctx.fill();
+    ctx.fillStyle = PALETTE.LUNGI_CHECK;
+    ctx.fillRect(rx + 6, 39, 2, 18);
+
+    ctx.fillStyle = '#222';
+    ctx.fillRect(rx + 2, 63, 6, 3);
+    ctx.fillRect(rx + 8, 63, 6, 3);
+  }
+
+  ctx.restore();
+}
+
+// ---------------------------------------------------------------------
+// DETAILED ELECTRIC POLE & TRANSFORMER (বৈদ্যুতিক খুঁটি ও ট্রান্সফরমার)
+// ---------------------------------------------------------------------
+function drawElectricPoleDetailed(ctx) {
+  // Size: 30 x 105
+  ctx.save();
+
+  ctx.fillStyle = PALETTE.POLE_CONCRETE;
+  ctx.fillRect(11, 0, 8, 105);
+  ctx.fillStyle = '#57606f';
+  ctx.fillRect(12, 0, 2, 105);
+
+  ctx.fillStyle = '#2f3542';
+  ctx.fillRect(2, 8, 26, 6);
+  ctx.fillRect(6, 26, 18, 5);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.roundRect(3, 3, 5, 5, 2);
+  ctx.roundRect(22, 3, 5, 5, 2);
+  ctx.roundRect(7, 21, 5, 5, 2);
+  ctx.roundRect(18, 21, 5, 5, 2);
+  ctx.fill();
+
+  ctx.fillStyle = PALETTE.TRANSFORMER_BODY;
+  ctx.beginPath();
+  ctx.roundRect(4, 38, 22, 28, 3);
+  ctx.fill();
+
+  ctx.fillStyle = '#1e272e';
+  for (let fx = 7; fx <= 22; fx += 3.5) {
+    ctx.fillRect(fx, 41, 1.8, 22);
+  }
+
+  ctx.fillStyle = '#f39c12';
+  ctx.fillRect(7, 34, 3, 4);
+  ctx.fillRect(19, 34, 3, 4);
+
+  // Lightning Decal
+  ctx.fillStyle = '#f1c40f';
+  ctx.beginPath();
+  ctx.moveTo(15, 48); ctx.lineTo(13, 54); ctx.lineTo(16, 54); ctx.lineTo(14, 60); ctx.lineTo(18, 52); ctx.lineTo(15, 52);
+  ctx.closePath();
+  ctx.fill();
+
+  // Tangled hanging optical fiber coils
+  ctx.strokeStyle = PALETTE.WIRE_COLOR;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(15, 74, 6, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(4, 8); ctx.bezierCurveTo(10, 16, 8, 24, 8, 34);
+  ctx.moveTo(24, 8); ctx.bezierCurveTo(20, 16, 20, 24, 20, 34);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// ---------------------------------------------------------------------
+// DETAILED DHAKA CROW (দাঁড়কাক)
+// ---------------------------------------------------------------------
+function drawCrowDetailed(ctx, frame) {
+  // Size: 48 x 36
+  ctx.save();
+
+  ctx.fillStyle = PALETTE.CROW_BODY;
+  ctx.beginPath(); ctx.ellipse(22, 18, 14, 9, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(36, 14, 7, 0, Math.PI * 2); ctx.fill();
+
+  ctx.fillStyle = '#57606f';
+  ctx.beginPath();
+  ctx.moveTo(41, 12); ctx.lineTo(48, 15); ctx.lineTo(41, 18);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = PALETTE.CROW_EYE;
+  ctx.beginPath(); ctx.arc(37, 13, 2, 0, Math.PI * 2); ctx.fill();
+
+  ctx.fillStyle = PALETTE.CROW_FEATHER;
+  if (frame === 1) {
+    ctx.beginPath();
+    ctx.moveTo(14, 16); ctx.quadraticCurveTo(22, 2, 28, 4); ctx.lineTo(24, 18);
+    ctx.fill();
+    ctx.fillRect(4, 21, 10, 4);
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(14, 18); ctx.quadraticCurveTo(22, 32, 28, 30); ctx.lineTo(24, 18);
+    ctx.fill();
+    ctx.fillRect(4, 16, 10, 4);
+  }
+
+  ctx.restore();
+}
+
+// ---------------------------------------------------------------------
+// DHAKA METRO RAIL (MRT LINE 6) TRAIN SPRITE
+// ---------------------------------------------------------------------
+function drawMetroTrainSprite(ctx) {
+  // Size: 160 x 30
+  ctx.save();
+
+  ctx.fillStyle = PALETTE.METRO_TRAIN_SILVER;
+  ctx.beginPath();
+  ctx.roundRect(0, 3, 160, 25, 4);
+  ctx.fill();
+
+  // Green Roof & Red Stripe (National Flag Colors)
+  ctx.fillStyle = PALETTE.METRO_TRAIN_GREEN;
+  ctx.fillRect(0, 3, 160, 5);
+  ctx.fillStyle = PALETTE.METRO_TRAIN_RED;
+  ctx.fillRect(0, 23, 160, 3);
+  ctx.beginPath(); ctx.arc(14, 16, 4, 0, Math.PI * 2); ctx.fill();
+
+  // Illuminated Panoramic Windows
+  for (let wx = 26; wx < 150; wx += 24) {
+    ctx.fillStyle = '#2f3542';
+    ctx.beginPath(); ctx.roundRect(wx, 10, 18, 11, 2); ctx.fill();
+    ctx.fillStyle = PALETTE.METRO_WINDOW_LIT;
+    ctx.fillRect(wx + 2, 12, 14, 7);
+  }
+
+  ctx.restore();
+}
+
+// ---------------------------------------------------------------------
+// DHAKA SKYLINE LANDMARKS (Parliament & High-Rises)
+// ---------------------------------------------------------------------
+function drawDhakaLandmark(ctx, variant) {
+  // Size: 180 x 160
+  ctx.save();
+
+  if (variant === 0) {
+    // 1. Jatiya Sangsad Bhaban (National Parliament House)
+    ctx.fillStyle = PALETTE.PARLIAMENT_CONCRETE;
+    ctx.fillRect(25, 60, 130, 100);
+    ctx.fillRect(10, 80, 30, 80);
+    ctx.fillRect(140, 80, 30, 80);
+
+    // Louis Kahn geometric cutouts
+    ctx.fillStyle = '#10141f';
+    ctx.beginPath(); ctx.arc(90, 95, 20, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(50, 105); ctx.lineTo(64, 82); ctx.lineTo(64, 105); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(130, 105); ctx.lineTo(116, 82); ctx.lineTo(116, 105); ctx.fill();
+
+    // Bangladesh Flag
+    ctx.strokeStyle = '#ced6e0';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(90, 60); ctx.lineTo(90, 32); ctx.stroke();
+    ctx.fillStyle = '#006a4e';
+    ctx.fillRect(90, 32, 14, 9);
+    ctx.fillStyle = '#f42a41';
+    ctx.beginPath(); ctx.arc(96, 36.5, 3, 0, Math.PI * 2); ctx.fill();
+
+  } else if (variant === 1) {
+    // 2. Modern Glass Skyscraper (City Centre Motijheel style)
+    ctx.fillStyle = PALETTE.BLDG_FAR_1;
+    ctx.fillRect(35, 25, 110, 135);
+
+    // Communications Mast with Aircraft Red Warning Light
+    ctx.strokeStyle = '#57606f';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(90, 25); ctx.lineTo(90, 5); ctx.stroke();
+    ctx.fillStyle = '#ff4757';
+    ctx.beginPath(); ctx.arc(90, 5, 2.5, 0, Math.PI * 2); ctx.fill();
+
+    // Windows
+    for (let y = 35; y < 150; y += 15) {
+      for (let x = 45; x < 135; x += 18) {
+        const isLit = (x * 7 + y * 13) % 4 === 0;
+        ctx.fillStyle = isLit ? PALETTE.BLDG_WINDOW_ON : PALETTE.BLDG_WINDOW_OFF;
+        ctx.fillRect(x, y, 10, 9);
+      }
+    }
+
+  } else if (variant === 2) {
+    // 3. Residential High-Rise with Balconies & Water Tanks
+    ctx.fillStyle = PALETTE.BLDG_FAR_2;
+    ctx.fillRect(20, 45, 140, 115);
+
+    // Blue & Black Gazi Plastic Water Tanks
+    ctx.fillStyle = '#0984e3';
+    ctx.beginPath(); ctx.roundRect(35, 32, 20, 13, 3); ctx.fill();
+    ctx.fillStyle = '#2d3436';
+    ctx.beginPath(); ctx.roundRect(60, 34, 16, 11, 2); ctx.fill();
+
+    // Rooftop Tin Shed (চিলেকোঠা)
+    ctx.fillStyle = PALETTE.ROOF_TIN;
+    ctx.beginPath();
+    ctx.moveTo(95, 45); ctx.lineTo(125, 30); ctx.lineTo(155, 45);
+    ctx.fill();
+
+    for (let y = 58; y < 150; y += 24) {
+      ctx.fillStyle = '#10141f';
+      ctx.fillRect(35, y, 50, 16);
+      ctx.fillRect(95, y, 50, 16);
+      ctx.strokeStyle = '#4b5568';
+      ctx.lineWidth = 1;
+      for (let gx = 38; gx <= 80; gx += 7) {
+        ctx.beginPath(); ctx.moveTo(gx, y + 6); ctx.lineTo(gx, y + 16); ctx.stroke();
+      }
+      for (let gx = 98; gx <= 140; gx += 7) {
+        ctx.beginPath(); ctx.moveTo(gx, y + 6); ctx.lineTo(gx, y + 16); ctx.stroke();
+      }
+      ctx.fillStyle = '#2ecc71';
+      ctx.fillRect(42, y + 3, 6, 4);
+      ctx.fillRect(102, y + 3, 6, 4);
+    }
+  } else {
+    // 4. Commercial Center with Neon Antennas
+    ctx.fillStyle = PALETTE.BLDG_FAR_1;
+    ctx.fillRect(30, 40, 120, 120);
+    ctx.fillStyle = '#e67e22';
+    ctx.fillRect(40, 50, 100, 6);
+    for (let y = 65; y < 150; y += 16) {
+      for (let x = 42; x < 140; x += 16) {
+        const isLit = (x + y * 5) % 3 === 0;
+        ctx.fillStyle = isLit ? PALETTE.BLDG_WINDOW_ON : PALETTE.BLDG_WINDOW_OFF;
+        ctx.fillRect(x, y, 9, 9);
+      }
+    }
+  }
+
+  ctx.restore();
+}
+
+// ---------------------------------------------------------------------
+// MIDGROUND DHAKA SHOPS (টং দোকান, বিকাশ/নগদ, ফার্মেসী, বিরিয়ানি)
+// ---------------------------------------------------------------------
+function drawDhakaMidShop(ctx, variant) {
+  // Size: 180 x 110
+  ctx.save();
+
+  // Brick Building Wall
+  ctx.fillStyle = PALETTE.BLDG_MID;
+  ctx.fillRect(0, 15, 180, 95);
+
+  // Corrugated Tin Awning (টিনের চালা)
+  ctx.fillStyle = PALETTE.ROOF_TIN;
+  ctx.beginPath();
+  ctx.moveTo(0, 16); ctx.lineTo(90, 6); ctx.lineTo(180, 16);
+  ctx.fill();
+
+  if (variant === 0) {
+    // 1. Tong Dokan (টংয়ের দোকান) - "মামা'র স্পেশাল চা ও বিস্কুট"
+    ctx.fillStyle = '#d35400';
+    ctx.fillRect(10, 22, 160, 22);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 13px "Hind Siliguri", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText("মামা'র স্পেশাল চা ও বিস্কুট", 90, 38);
+
+    // Weathered Wooden Counter
+    ctx.fillStyle = '#4e342e';
+    ctx.fillRect(14, 52, 152, 58);
+
+    // Aluminum Tea Kettle (চা’য়ের কেতলি)
+    ctx.fillStyle = '#bdc3c7';
+    ctx.beginPath(); ctx.ellipse(45, 46, 9, 8, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillRect(42, 35, 6, 4);
+    // Rising steam
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(45, 34); ctx.quadraticCurveTo(40, 24, 46, 18); ctx.stroke();
+
+    // Biscuit glass jars
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fillRect(72, 34, 14, 18);
+    ctx.fillRect(92, 34, 14, 18);
+    ctx.fillStyle = '#f39c12';
+    ctx.fillRect(74, 38, 10, 12);
+    ctx.fillRect(94, 38, 10, 12);
+
+    // Bunch of bananas
+    ctx.fillStyle = '#f1c40f';
+    ctx.fillRect(130, 26, 16, 22);
+
+  } else if (variant === 1) {
+    // 2. bKash & Nagad Agent Point (বিকাশ ও নগদ এজেন্ট)
+    ctx.fillStyle = PALETTE.SIGN_BKASH;
+    ctx.fillRect(10, 20, 78, 24);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 14px "Hind Siliguri", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('বিকাশ', 49, 37);
+
+    ctx.fillStyle = PALETTE.SIGN_NAGAD;
+    ctx.fillRect(92, 20, 78, 24);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('নগদ', 131, 37);
+
+    // Rolling Shutter
+    ctx.fillStyle = '#1e272e';
+    ctx.fillRect(14, 50, 152, 60);
+    ctx.strokeStyle = '#34495e';
+    ctx.lineWidth = 1;
+    for (let sy = 54; sy < 110; sy += 7) {
+      ctx.beginPath(); ctx.moveTo(14, sy); ctx.lineTo(166, sy); ctx.stroke();
+    }
+
+  } else if (variant === 2) {
+    // 3. Bhai Bhai Pharmacy (ভাই ভাই ফার্মেসী ও ড্রাগ হাউজ)
+    ctx.fillStyle = PALETTE.SIGN_PHARMACY;
+    ctx.fillRect(10, 22, 160, 22);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 13px "Hind Siliguri", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('ভাই ভাই ফার্মেসী ও ড্রাগ হাউজ', 90, 38);
+
+    // Medical Cross
+    ctx.fillStyle = '#2ecc71';
+    ctx.fillRect(18, 26, 14, 4);
+    ctx.fillRect(23, 21, 4, 14);
+
+    ctx.fillStyle = '#1e272e';
+    ctx.fillRect(14, 50, 152, 60);
+    ctx.strokeStyle = '#27ae60';
+    ctx.strokeRect(20, 56, 140, 48);
+
+  } else {
+    // 4. Dhaka Biryani & Kacchi House
+    ctx.fillStyle = '#c0392b';
+    ctx.fillRect(10, 22, 160, 22);
+    ctx.fillStyle = '#f1c40f';
+    ctx.font = '700 13px "Hind Siliguri", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('ঢাকা কাচ্চি ও বিরিয়ানি হাউজ', 90, 38);
+
+    // Giant Traditional Deg (ডেকচি)
+    ctx.fillStyle = '#bdc3c7';
+    ctx.beginPath(); ctx.ellipse(90, 72, 28, 20, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#c0392b'; // red cloth (সালু কাপড়)
+    ctx.fillRect(62, 62, 56, 6);
+  }
+
+  // Street posters (টু-লেট 'TO-LET', ওয়াজ মাহফিল)
+  ctx.fillStyle = '#f1f2f6';
+  ctx.fillRect(4, 75, 12, 18);
+  ctx.fillStyle = '#e74c3c';
+  ctx.fillRect(6, 78, 8, 3);
+
+  ctx.restore();
+}
+
+// =====================================================================
+// SECTION 4: PROCEDURAL WEB AUDIO SYNTHESIZER
+// =====================================================================
+class SoundSynth {
+  constructor() {
+    this.ctx = null;
+    this.masterGain = null;
+    this.muted = localStorage.getItem('dino_loadshedding_muted') === 'true';
+    this.generatorOsc = null;
+    this.generatorGain = null;
+  }
+
+  init() {
+    if (this.ctx) return;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    this.ctx = new AudioContextClass();
+    this.masterGain = this.ctx.createGain();
+    this.masterGain.gain.value = this.muted ? 0 : 0.45;
+    this.masterGain.connect(this.ctx.destination);
+  }
+
+  toggleMute() {
+    this.muted = !this.muted;
+    localStorage.setItem('dino_loadshedding_muted', this.muted);
+    if (this.masterGain && this.ctx) {
+      this.masterGain.gain.setValueAtTime(this.muted ? 0 : 0.45, this.ctx.currentTime);
+    }
+    return this.muted;
+  }
+
+  ensureContext() {
+    if (!this.ctx) this.init();
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+
+  playJump() {
+    if (this.muted || !this.ctx) return;
+    this.ensureContext();
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(170, t);
+    osc.frequency.exponentialRampToValueAtTime(620, t + 0.12);
+    gain.gain.setValueAtTime(0.4, t);
+    gain.gain.linearRampToValueAtTime(0.01, t + 0.12);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t);
+    osc.stop(t + 0.13);
+  }
+
+  playDuck() {
+    if (this.muted || !this.ctx) return;
+    this.ensureContext();
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(280, t);
+    osc.frequency.exponentialRampToValueAtTime(85, t + 0.08);
+    gain.gain.setValueAtTime(0.3, t);
+    gain.gain.linearRampToValueAtTime(0.01, t + 0.08);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t);
+    osc.stop(t + 0.09);
+  }
+
+  playMilestone() {
+    if (this.muted || !this.ctx) return;
+    this.ensureContext();
+    const t = this.ctx.currentTime;
+    const playBeep = (freq, start, dur) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(freq, start);
+      gain.gain.setValueAtTime(0.25, start);
+      gain.gain.linearRampToValueAtTime(0.01, start + dur);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(start);
+      osc.stop(start + dur + 0.01);
+    };
+    playBeep(640, t, 0.08);
+    playBeep(920, t + 0.1, 0.12);
+  }
+
+  // Battery Rickshaw Electric Horn & Bell ("প্যাঁক-প্যাঁক" & "ট্রিং-ট্রিং")
+  playRickshawHorn() {
+    if (this.muted || !this.ctx) return;
+    this.ensureContext();
+    const t = this.ctx.currentTime;
+
+    const honk = (start) => {
+      const o1 = this.ctx.createOscillator();
+      const o2 = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      o1.type = 'sawtooth';
+      o2.type = 'square';
+      o1.frequency.setValueAtTime(740, start);
+      o2.frequency.setValueAtTime(880, start);
+      gain.gain.setValueAtTime(0.28, start);
+      gain.gain.linearRampToValueAtTime(0.01, start + 0.06);
+      o1.connect(gain); o2.connect(gain);
+      gain.connect(this.masterGain);
+      o1.start(start); o2.start(start);
+      o1.stop(start + 0.07); o2.stop(start + 0.07);
+    };
+    honk(t);
+    honk(t + 0.09);
+
+    const bell = (start) => {
+      const bOsc = this.ctx.createOscillator();
+      const bGain = this.ctx.createGain();
+      bOsc.type = 'sine';
+      bOsc.frequency.setValueAtTime(1480, start);
+      bGain.gain.setValueAtTime(0.2, start);
+      bGain.gain.exponentialRampToValueAtTime(0.01, start + 0.18);
+      bOsc.connect(bGain);
+      bGain.connect(this.masterGain);
+      bOsc.start(start);
+      bOsc.stop(start + 0.19);
+    };
+    bell(t + 0.18);
+    bell(t + 0.28);
+  }
+
+  playCrowCaw() {
+    if (this.muted || !this.ctx) return;
+    this.ensureContext();
+    const t = this.ctx.currentTime;
+    const cawBurst = (start) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const filter = this.ctx.createBiquadFilter();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(840, start);
+      osc.frequency.linearRampToValueAtTime(560, start + 0.13);
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(1150, start);
+      filter.Q.value = 3;
+      gain.gain.setValueAtTime(0.26, start);
+      gain.gain.linearRampToValueAtTime(0.01, start + 0.13);
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(start);
+      osc.stop(start + 0.14);
+    };
+    cawBurst(t);
+    cawBurst(t + 0.15);
+  }
+
+  playElectricZap() {
+    if (this.muted || !this.ctx) return;
+    this.ensureContext();
+    const t = this.ctx.currentTime;
+    const bufferSize = Math.floor(this.ctx.sampleRate * 0.09);
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+    }
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 2400;
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.35, t);
+    gain.gain.linearRampToValueAtTime(0.01, t + 0.09);
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.masterGain);
+    noise.start(t);
+  }
+
+  playCoinSnatch() {
+    if (this.muted || !this.ctx) return;
+    this.ensureContext();
+    const t = this.ctx.currentTime;
+    const freqs = [523, 659, 784, 1046];
+    freqs.forEach((freq, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t + idx * 0.03);
+      gain.gain.setValueAtTime(0.3, t + idx * 0.03);
+      gain.gain.linearRampToValueAtTime(0.01, t + idx * 0.03 + 0.08);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(t + idx * 0.03);
+      osc.stop(t + idx * 0.03 + 0.09);
+    });
+  }
+
+  playPowerOff() {
+    if (this.muted || !this.ctx) return;
+    this.ensureContext();
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(220, t);
+    osc.frequency.exponentialRampToValueAtTime(30, t + 0.42);
+    gain.gain.setValueAtTime(0.6, t);
+    gain.gain.linearRampToValueAtTime(0.01, t + 0.45);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t);
+    osc.stop(t + 0.46);
+  }
+
+  playPowerOn() {
+    if (this.muted || !this.ctx) return;
+    this.ensureContext();
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(45, t);
+    osc.frequency.linearRampToValueAtTime(130, t + 0.26);
+    gain.gain.setValueAtTime(0.5, t);
+    gain.gain.linearRampToValueAtTime(0.01, t + 0.3);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t);
+    osc.stop(t + 0.32);
+  }
+
+  startGenerator() {
+    if (this.muted || !this.ctx || this.generatorOsc) return;
+    this.ensureContext();
+    const t = this.ctx.currentTime;
+    this.generatorOsc = this.ctx.createOscillator();
+    this.generatorGain = this.ctx.createGain();
+    this.generatorOsc.type = 'triangle';
+    this.generatorOsc.frequency.setValueAtTime(56, t);
+    this.generatorGain.gain.setValueAtTime(0.01, t);
+    this.generatorGain.gain.linearRampToValueAtTime(0.2, t + 0.5);
+    this.generatorOsc.connect(this.generatorGain);
+    this.generatorGain.connect(this.masterGain);
+    this.generatorOsc.start(t);
+  }
+
+  stopGenerator() {
+    if (this.generatorOsc && this.ctx) {
+      const t = this.ctx.currentTime;
+      this.generatorGain.gain.linearRampToValueAtTime(0.001, t + 0.3);
+      this.generatorOsc.stop(t + 0.35);
+      this.generatorOsc = null;
+      this.generatorGain = null;
+    }
+  }
+
+  playCrowdCheer() {
+    if (this.muted || !this.ctx) return;
+    this.ensureContext();
+    const t = this.ctx.currentTime;
+    const dur = 1.6;
+    const bufSize = Math.floor(this.ctx.sampleRate * dur);
+    const buffer = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * 0.6;
+    }
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(800, t);
+    filter.Q.value = 1.8;
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.01, t);
+    gain.gain.linearRampToValueAtTime(0.4, t + 0.3);
+    gain.gain.linearRampToValueAtTime(0.01, t + dur);
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.masterGain);
+    noise.start(t);
+
+    [720, 960, 1180].forEach((freq, i) => {
+      const osc = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t + i * 0.1);
+      osc.frequency.linearRampToValueAtTime(freq + 320, t + 0.6 + i * 0.1);
+      g.gain.setValueAtTime(0.12, t + i * 0.1);
+      g.gain.linearRampToValueAtTime(0.01, t + 0.8 + i * 0.1);
+      osc.connect(g);
+      g.connect(this.masterGain);
+      osc.start(t + i * 0.1);
+      osc.stop(t + 0.9 + i * 0.1);
+    });
+  }
+
+  playGameOver() {
+    if (this.muted || !this.ctx) return;
+    this.ensureContext();
+    const t = this.ctx.currentTime;
+    const notes = [260, 220, 175, 130];
+    notes.forEach((freq, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq, t + idx * 0.12);
+      gain.gain.setValueAtTime(0.35, t + idx * 0.12);
+      gain.gain.linearRampToValueAtTime(0.01, t + idx * 0.12 + 0.14);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(t + idx * 0.12);
+      osc.stop(t + idx * 0.12 + 0.15);
+    });
+  }
+}
+
+const audio = new SoundSynth();
+
+// =====================================================================
+// SECTION 5: OBJECT POOLS
+// =====================================================================
+class ObjectPool {
+  constructor(factory, size = 60) {
+    this.pool = [];
+    for (let i = 0; i < size; i++) {
+      this.pool.push(factory());
+    }
+  }
+
+  obtain() {
+    return this.pool.find(item => !item.active) || null;
+  }
+}
+
+const particlePool = new ObjectPool(() => ({
+  active: false,
+  type: 'spark',
+  x: 0, y: 0,
+  vx: 0, vy: 0,
+  rot: 0, vrot: 0,
+  life: 0, maxLife: 1,
+  color: '#fff',
+  size: 3
+}), 100);
+
+function spawnSparks(x, y, count = 8) {
+  for (let i = 0; i < count; i++) {
+    const p = particlePool.obtain();
+    if (!p) break;
+    p.active = true;
+    p.type = 'spark';
+    p.x = x; p.y = y;
+    p.vx = (Math.random() - 0.5) * 180;
+    p.vy = -Math.random() * 150 - 50;
+    p.maxLife = 0.45 + Math.random() * 0.35;
+    p.life = p.maxLife;
+    p.color = Math.random() < 0.6 ? PALETTE.SPARK : '#ffffff';
+    p.size = 2.5;
+  }
+}
+
+function spawnDust(x, y) {
+  for (let i = 0; i < 4; i++) {
+    const p = particlePool.obtain();
+    if (!p) break;
+    p.active = true;
+    p.type = 'dust';
+    p.x = x + (Math.random() - 0.5) * 10;
+    p.y = y;
+    p.vx = -Math.random() * 50 - 30;
+    p.vy = -Math.random() * 35;
+    p.maxLife = 0.3 + Math.random() * 0.25;
+    p.life = p.maxLife;
+    p.color = 'rgba(160, 175, 195, 0.45)';
+    p.size = 3 + Math.random() * 3;
+  }
+}
+
+function spawnFlyingTaka(x, y, count = 12) {
+  for (let i = 0; i < count; i++) {
+    const p = particlePool.obtain();
+    if (!p) break;
+    p.active = true;
+    p.type = 'taka';
+    p.x = x + 15;
+    p.y = y + 15;
+    p.vx = (Math.random() * 320 - 90);
+    p.vy = -Math.random() * 260 - 80;
+    p.rot = Math.random() * Math.PI * 2;
+    p.vrot = (Math.random() - 0.5) * 14;
+    p.maxLife = 1.4 + Math.random() * 0.6;
+    p.life = p.maxLife;
+    p.color = Math.random() < 0.6 ? PALETTE.TAKA_500 : PALETTE.TAKA_1000;
+    p.size = 8;
+  }
+}
+
+const floatingTexts = [];
+function spawnFloatingText(text, x, y, color = PALETTE.ALERT_RED) {
+  floatingTexts.push({
+    text, x, y,
+    vy: -40,
+    life: 1.3,
+    maxLife: 1.3,
+    color
+  });
+}
+
+// =====================================================================
+// SECTION 6: DHAKA CITY PARALLAX LAYERS & ENVIRONMENT
+// =====================================================================
+class DhakaWorld {
+  constructor() {
+    this.skyTime = 0;
+    this.landmarksX = 0;
+    this.metroViaductX = 0;
+    this.metroTrainX = -200;
+    this.metroTrainTimer = 4; // train comes quickly!
+    this.midShopsX = 0;
+    this.roadX = 0;
+
+    // Stars
+    this.stars = [];
+    for (let i = 0; i < 50; i++) {
+      this.stars.push({
+        x: Math.random() * W,
+        y: Math.random() * 85,
+        size: Math.random() < 0.8 ? 1.5 : 2.5,
+        twinkle: Math.random() * Math.PI * 2
+      });
+    }
+
+    // Street Features
+    this.manholes = [{ x: 180 }, { x: 520 }, { x: 880 }];
+    this.puddles = [{ x: 260, w: 42 }, { x: 620, w: 55 }];
+  }
+
+  update(dt, speed) {
+    this.skyTime = (this.skyTime + dt) % CONFIG.DAY_NIGHT_CYCLE;
+    this.landmarksX = (this.landmarksX - speed * 0.08 * dt) % (180 * 4);
+    this.metroViaductX = (this.metroViaductX - speed * 0.18 * dt) % 240;
+    this.midShopsX = (this.midShopsX - speed * 0.38 * dt) % (180 * 4);
+    this.roadX = (this.roadX - speed * dt) % 60;
+
+    // Metro Train movement
+    this.metroTrainTimer -= dt;
+    if (this.metroTrainTimer <= 0) {
+      this.metroTrainX += (speed * 0.35 + 160) * dt;
+      if (this.metroTrainX > W + 220) {
+        this.metroTrainX = -220;
+        this.metroTrainTimer = 14 + Math.random() * 10;
+      }
+    }
+
+    this.stars.forEach(s => {
+      s.twinkle += dt * 4;
+    });
+
+    this.manholes.forEach(m => {
+      m.x -= speed * dt;
+      if (m.x < -60) m.x = W + Math.random() * 140 + 40;
+    });
+    this.puddles.forEach(p => {
+      p.x -= speed * dt;
+      if (p.x + p.w < -60) p.x = W + Math.random() * 160 + 60;
+    });
+  }
+
+  getSkyFactor() {
+    const norm = this.skyTime / CONFIG.DAY_NIGHT_CYCLE;
+    if (norm < 0.38) return 0.0;
+    if (norm < 0.54) return (norm - 0.38) / 0.16;
+    if (norm < 0.86) return 1.0;
+    return 1.0 - ((norm - 0.86) / 0.14);
+  }
+
+  render(ctx) {
+    const skyFactor = this.getSkyFactor();
+
+    // 1. SKY GRADIENT
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+    if (skyFactor < 0.5) {
+      const t = skyFactor * 2;
+      skyGrad.addColorStop(0, lerpColor(PALETTE.SKY_DAY_TOP, PALETTE.SKY_DUSK_TOP, t));
+      skyGrad.addColorStop(0.5, lerpColor(PALETTE.SKY_DAY_TOP, PALETTE.SKY_DUSK_MID, t));
+      skyGrad.addColorStop(1, lerpColor(PALETTE.SKY_DAY_BOTTOM, PALETTE.SKY_DUSK_BOTTOM, t));
+    } else {
+      const t = (skyFactor - 0.5) * 2;
+      skyGrad.addColorStop(0, lerpColor(PALETTE.SKY_DUSK_TOP, PALETTE.SKY_NIGHT_TOP, t));
+      skyGrad.addColorStop(0.5, lerpColor(PALETTE.SKY_DUSK_MID, PALETTE.SKY_NIGHT_TOP, t));
+      skyGrad.addColorStop(1, lerpColor(PALETTE.SKY_DUSK_BOTTOM, PALETTE.SKY_NIGHT_BOTTOM, t));
+    }
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, W, GROUND_Y);
+
+    // 2. STARS & MOON
+    if (skyFactor > 0.25) {
+      const starAlpha = Math.min(1, (skyFactor - 0.25) / 0.45);
+      ctx.fillStyle = PALETTE.STAR;
+      this.stars.forEach(s => {
+        const tw = 0.5 + 0.5 * Math.sin(s.twinkle);
+        ctx.globalAlpha = starAlpha * tw;
+        ctx.fillRect(Math.floor(s.x), Math.floor(s.y), s.size, s.size);
+      });
+
+      ctx.globalAlpha = starAlpha;
+      ctx.fillStyle = PALETTE.MOON_GLOW;
+      ctx.beginPath(); ctx.arc(840, 42, 24, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = PALETTE.MOON;
+      ctx.beginPath(); ctx.arc(840, 42, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,0.12)';
+      ctx.beginPath(); ctx.arc(844, 39, 11, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1.0;
+    }
+
+    // 3. FAR SKYLINE: DHAKA LANDMARKS (Parliament & High-Rises)
+    for (let x = Math.floor(this.landmarksX); x < W + 180; x += 180) {
+      const idx = Math.abs(Math.floor(x / 180)) % 4;
+      ctx.drawImage(SPRITES.LANDMARKS[idx], x, 30);
+    }
+
+    // 4. DHAKA METRO RAIL (MRT LINE 6) ELEVATED VIADUCT
+    const viaductY = 82;
+    // Massive Concrete Piers
+    for (let px = Math.floor(this.metroViaductX); px < W + 220; px += 220) {
+      ctx.fillStyle = PALETTE.METRO_PILLAR;
+      ctx.fillRect(px + 90, viaductY + 12, 16, GROUND_Y - viaductY - 12);
+      ctx.fillRect(px + 82, viaductY + 8, 32, 6);
+    }
+
+    // Deck & Parapet Walls
+    ctx.fillStyle = PALETTE.METRO_VIADUCT;
+    ctx.fillRect(0, viaductY, W, 9);
+    ctx.fillStyle = PALETTE.METRO_VIADUCT_LIGHT;
+    ctx.fillRect(0, viaductY + 9, W, 4);
+
+    // Catenary overhead masts
+    ctx.strokeStyle = '#4b5568';
+    ctx.lineWidth = 1.5;
+    for (let mx = Math.floor(this.metroViaductX); mx < W + 110; mx += 110) {
+      ctx.beginPath();
+      ctx.moveTo(mx, viaductY); ctx.lineTo(mx, viaductY - 14);
+      ctx.lineTo(mx + 8, viaductY - 14);
+      ctx.stroke();
+    }
+
+    // Moving Metro Rail Train (MRT-6)
+    if (this.metroTrainX > -180 && this.metroTrainX < W + 180) {
+      ctx.drawImage(SPRITES.METRO_TRAIN, Math.floor(this.metroTrainX), viaductY - 24);
+    }
+
+    // 5. MIDGROUND DHAKA SHOPS & BUILDINGS
+    for (let x = Math.floor(this.midShopsX); x < W + 180; x += 180) {
+      const idx = Math.abs(Math.floor(x / 180)) % 4;
+      ctx.drawImage(SPRITES.MID_SHOPS[idx], x, GROUND_Y - 110);
+    }
+
+    // Tangled Overhead Cables (Dhaka's signature wire maze)
+    ctx.strokeStyle = PALETTE.WIRE_COLOR;
+    ctx.lineWidth = 1.5;
+    for (let wy = 88; wy <= 116; wy += 14) {
+      ctx.beginPath();
+      ctx.moveTo(0, wy);
+      ctx.bezierCurveTo(W * 0.35, wy + 10, W * 0.65, wy + 14, W, wy + 3);
+      ctx.stroke();
+    }
+
+    // 6. STREET FOOTPATH & BLACK/YELLOW STRIPED CURB
+    ctx.fillStyle = '#2f3542';
+    ctx.fillRect(0, GROUND_Y - 6, W, 6);
+
+    for (let cx = Math.floor(this.roadX * 1.5); cx < W; cx += 32) {
+      ctx.fillStyle = PALETTE.CURB_YELLOW;
+      ctx.beginPath();
+      ctx.moveTo(cx, GROUND_Y);
+      ctx.lineTo(cx + 16, GROUND_Y - 6);
+      ctx.lineTo(cx + 32, GROUND_Y - 6);
+      ctx.lineTo(cx + 16, GROUND_Y);
+      ctx.fill();
+    }
+
+    // 7. ROAD SURFACE (DARK TEXTURED ASPHALT)
+    ctx.fillStyle = PALETTE.ROAD_ASPHALT;
+    ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+
+    // Yellow Dashed Lane Marking
+    ctx.fillStyle = PALETTE.ROAD_MARK_YELLOW;
+    for (let rx = Math.floor(this.roadX); rx < W; rx += 60) {
+      ctx.fillRect(rx, GROUND_Y + 22, 34, 3);
+    }
+
+    // WASA Manholes
+    this.manholes.forEach(m => {
+      ctx.fillStyle = PALETTE.MANHOLE;
+      ctx.beginPath();
+      ctx.ellipse(Math.floor(m.x), GROUND_Y + 12, 14, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#1e272e';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+
+    // Roadside Puddles
+    this.puddles.forEach(p => {
+      ctx.fillStyle = PALETTE.PUDDLE;
+      ctx.beginPath();
+      ctx.roundRect(Math.floor(p.x), GROUND_Y + 6, p.w, 6, 3);
+      ctx.fill();
+      ctx.fillStyle = PALETTE.PUDDLE_REFLECT;
+      ctx.beginPath();
+      ctx.roundRect(Math.floor(p.x + 4), GROUND_Y + 7, p.w - 8, 3, 2);
+      ctx.fill();
+    });
+  }
+}
+
+function lerpColor(a, b, t) {
+  const ah = parseInt(a.replace('#', ''), 16);
+  const bh = parseInt(b.replace('#', ''), 16);
+  const ar = (ah >> 16) & 255, ag = (ah >> 8) & 255, ab = ah & 255;
+  const br = (bh >> 16) & 255, bg = (bh >> 8) & 255, bb = bh & 255;
+  const rr = Math.round(ar + (br - ar) * t);
+  const rg = Math.round(ag + (bg - ag) * t);
+  const rb = Math.round(ab + (bb - ab) * t);
+  return '#' + ((1 << 24) + (rr << 16) + (rg << 8) + rb).toString(16).slice(1);
+}
+
+// =====================================================================
+// SECTION 7: DINO HERO ENTITY & PHYSICS
+// =====================================================================
+class DinoHero {
+  constructor() {
+    this.reset();
+  }
+
+  reset() {
+    this.x = CONFIG.DINO_X;
+    this.y = GROUND_Y - 70;
+    this.vy = 0;
+    this.isGrounded = true;
+    this.isDucking = false;
+    this.isDead = false;
+
+    this.isStunned = false;
+    this.stunTimer = 0;
+    this.stunAngle = 0;
+
+    this.animTimer = 0;
+    this.runFrame = 1;
+    this.blinkTimer = 2.5 + Math.random() * 2;
+    this.isBlinking = false;
+  }
+
+  jump() {
+    if (this.isGrounded && !this.isDead) {
+      this.vy = CONFIG.JUMP_IMPULSE;
+      this.isGrounded = false;
+      audio.playJump();
+      spawnDust(this.x + 28, GROUND_Y);
+    }
+  }
+
+  releaseJump() {
+    if (!this.isGrounded && this.vy < CONFIG.VARIABLE_JUMP_CUT) {
+      this.vy = CONFIG.VARIABLE_JUMP_CUT;
+    }
+  }
+
+  duck(state) {
+    if (this.isDead) return;
+    if (state && !this.isDucking && this.isGrounded) {
+      audio.playDuck();
+    }
+    this.isDucking = state;
+  }
+
+  hitChandabaz() {
+    this.isStunned = true;
+    this.stunTimer = CONFIG.STUN_DURATION;
+    audio.playCoinSnatch();
+    spawnFlyingTaka(this.x + 20, this.y + 16, 14);
+  }
+
+  update(dt, isDuckKeyHeld) {
+    if (this.isDead) return;
+
+    this.duck(isDuckKeyHeld);
+
+    const gravity = (!this.isGrounded && this.isDucking)
+      ? CONFIG.DUCK_GRAVITY
+      : CONFIG.GRAVITY;
+
+    this.vy += gravity * dt;
+    this.y += this.vy * dt;
+
+    const normalHeight = this.isDucking ? 45 : 70;
+    const targetGroundY = GROUND_Y - normalHeight;
+
+    if (this.y >= targetGroundY) {
+      this.y = targetGroundY;
+      this.vy = 0;
+      if (!this.isGrounded) {
+        this.isGrounded = true;
+        spawnDust(this.x + 26, GROUND_Y);
+      }
+    }
+
+    this.animTimer += dt;
+    if (this.animTimer > 0.08) {
+      this.animTimer = 0;
+      this.runFrame = this.runFrame === 1 ? 2 : 1;
+    }
+
+    this.blinkTimer -= dt;
+    if (this.blinkTimer <= 0) {
+      this.isBlinking = true;
+      if (this.blinkTimer <= -0.14) {
+        this.isBlinking = false;
+        this.blinkTimer = 2.5 + Math.random() * 3;
+      }
+    }
+
+    if (this.isStunned) {
+      this.stunTimer -= dt;
+      this.stunAngle += dt * 8;
+      if (this.stunTimer <= 0) {
+        this.isStunned = false;
+      }
+    }
+  }
+
+  getHitbox() {
+    if (this.isDucking) {
+      return {
+        x: Math.floor(this.x + 10),
+        y: Math.floor(this.y + 12),
+        w: 70,
+        h: 32
+      };
+    } else {
+      return {
+        x: Math.floor(this.x + 12),
+        y: Math.floor(this.y + 6),
+        w: 42,
+        h: 62
+      };
+    }
+  }
+
+  render(ctx) {
+    if (this.isStunned && Math.floor(this.stunTimer * 20) % 2 === 0) {
+      // flicker skip
+    } else {
+      let sprite;
+      if (this.isDead) {
+        sprite = SPRITES.DINO_DEAD;
+      } else if (!this.isGrounded) {
+        sprite = SPRITES.DINO_JUMP;
+      } else if (this.isDucking) {
+        sprite = this.runFrame === 1 ? SPRITES.DINO_DUCK1 : SPRITES.DINO_DUCK2;
+      } else {
+        sprite = this.runFrame === 1 ? SPRITES.DINO_RUN1 : SPRITES.DINO_RUN2;
+      }
+
+      ctx.drawImage(sprite, Math.floor(this.x), Math.floor(this.y));
+
+      if (this.isBlinking && !this.isDead && !this.isDucking) {
+        ctx.fillStyle = PALETTE.DINO_SKIN;
+        ctx.fillRect(Math.floor(this.x + 40), Math.floor(this.y + 6), 9, 8);
+      }
+    }
+
+    if (this.isStunned && !this.isDead) {
+      const hx = this.x + (this.isDucking ? 68 : 42);
+      const hy = this.y - 6;
+      ctx.fillStyle = PALETTE.GOLD_STAR;
+      for (let i = 0; i < 3; i++) {
+        const ang = this.stunAngle + (i * Math.PI * 2 / 3);
+        const sx = hx + Math.cos(ang) * 18;
+        const sy = hy + Math.sin(ang) * 6;
+        ctx.beginPath();
+        ctx.arc(Math.floor(sx), Math.floor(sy), 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+}
+
+// =====================================================================
+// SECTION 8: OBSTACLES (BATTERY RICKSHAW, POLE, CHANDABAZ, CROWS)
+// =====================================================================
+const OBSTACLE_TYPES = {
+  ELECTRIC_POLE: 'ELECTRIC_POLE',
+  BATTERY_RICKSHAW: 'BATTERY_RICKSHAW',
+  CHANDABAZ: 'CHANDABAZ',
+  CROW_LOW: 'CROW_LOW',
+  CROW_HIGH: 'CROW_HIGH'
+};
+
+class ObstacleManager {
+  constructor() {
+    this.obstacles = [];
+    this.nextSpawnDistance = 420;
+    this.crowUnlocked = false;
+  }
+
+  reset() {
+    this.obstacles = [];
+    this.nextSpawnDistance = 440;
+    this.crowUnlocked = false;
+  }
+
+  update(dt, speed, score, dino) {
+    if (score >= 180) this.crowUnlocked = true;
+
+    for (let i = this.obstacles.length - 1; i >= 0; i--) {
+      const obs = this.obstacles[i];
+      let obsSpeed = (obs.type === OBSTACLE_TYPES.CROW_LOW || obs.type === OBSTACLE_TYPES.CROW_HIGH)
+        ? (speed + 45)
+        : speed;
+
+      if (obs.type === OBSTACLE_TYPES.CHANDABAZ && obs.hasHit) {
+        obsSpeed = speed + 130;
+      }
+
+      obs.x -= obsSpeed * dt;
+
+      if (obs.type === OBSTACLE_TYPES.ELECTRIC_POLE) {
+        obs.sparkTimer -= dt;
+        if (obs.sparkTimer <= 0) {
+          obs.sparkTimer = 1.8 + Math.random() * 2.5;
+          spawnSparks(obs.x + 14, obs.y + 36, 9);
+          audio.playElectricZap();
+        }
+      } else if (obs.type === OBSTACLE_TYPES.BATTERY_RICKSHAW) {
+        // Honk when nearing dino!
+        if (!obs.hasHonked && obs.x < 560 && obs.x > 320) {
+          obs.hasHonked = true;
+          audio.playRickshawHorn();
+          const shouts = ['সাইড দেন মামা!', 'আরে ভাই দেখে চালান!', 'ব্রেক ধরে না মামা!'];
+          obs.speechBubble = { text: shouts[Math.floor(Math.random() * shouts.length)], duration: 1.5 };
+        }
+      } else if (obs.type === OBSTACLE_TYPES.CHANDABAZ) {
+        if (!obs.hasDemanded && obs.x < 550 && obs.x > 280) {
+          obs.hasDemanded = true;
+          obs.speechBubble = { text: 'ভাই, চা-পানির খরচ দেন!', duration: 2.2 };
+        }
+        if (!obs.cleared && obs.x + obs.w < dino.x) {
+          obs.cleared = true;
+          if (!obs.hasHit) {
+            obs.speechBubble = { text: 'আরে ধর ধর!', duration: 1.5 };
+          }
+        }
+      }
+
+      if (obs.speechBubble) {
+        obs.speechBubble.duration -= dt;
+        if (obs.speechBubble.duration <= 0) {
+          obs.speechBubble = null;
+        }
+      }
+
+      if (obs.x + obs.w < -80) {
+        this.obstacles.splice(i, 1);
+      }
+    }
+
+    this.nextSpawnDistance -= speed * dt;
+    if (this.nextSpawnDistance <= 0) {
+      this.spawnRandomObstacle(speed, score);
+    }
+  }
+
+  spawnRandomObstacle(speed, score) {
+    const jumpAirTime = 0.65;
+    const minClearance = speed * jumpAirTime + 110;
+    const extraRandomGap = 90 + Math.random() * 210;
+    this.nextSpawnDistance = minClearance + extraRandomGap;
+
+    // Battery Rickshaw spawns right from the start!
+    const candidates = [OBSTACLE_TYPES.BATTERY_RICKSHAW, OBSTACLE_TYPES.ELECTRIC_POLE, OBSTACLE_TYPES.CHANDABAZ];
+    if (this.crowUnlocked) {
+      candidates.push(OBSTACLE_TYPES.CROW_LOW);
+      candidates.push(OBSTACLE_TYPES.CROW_HIGH);
+    }
+
+    const type = candidates[Math.floor(Math.random() * candidates.length)];
+    let obs = null;
+
+    if (type === OBSTACLE_TYPES.BATTERY_RICKSHAW) {
+      obs = {
+        type,
+        x: W + 20,
+        y: GROUND_Y - 58,
+        w: 86,
+        h: 58,
+        hitbox: { ox: 6, oy: 6, w: 74, h: 50 },
+        hasHonked: false,
+        speechBubble: null
+      };
+    } else if (type === OBSTACLE_TYPES.ELECTRIC_POLE) {
+      obs = {
+        type,
+        x: W + 20,
+        y: GROUND_Y - 105,
+        w: 30,
+        h: 105,
+        hitbox: { ox: 5, oy: 10, w: 20, h: 95 },
+        sparkTimer: 0.8 + Math.random() * 2
+      };
+    } else if (type === OBSTACLE_TYPES.CHANDABAZ) {
+      obs = {
+        type,
+        x: W + 20,
+        y: GROUND_Y - 66,
+        w: 84,
+        h: 66,
+        hitbox: { ox: 6, oy: 8, w: 72, h: 58 },
+        hasDemanded: false,
+        hasHit: false,
+        cleared: false,
+        speechBubble: null
+      };
+    } else if (type === OBSTACLE_TYPES.CROW_LOW) {
+      audio.playCrowCaw();
+      obs = {
+        type,
+        x: W + 20,
+        y: 172,
+        w: 48,
+        h: 36,
+        hitbox: { ox: 6, oy: 6, w: 36, h: 24 },
+        animFrame: 1,
+        animTimer: 0
+      };
+    } else if (type === OBSTACLE_TYPES.CROW_HIGH) {
+      audio.playCrowCaw();
+      obs = {
+        type,
+        x: W + 20,
+        y: 124,
+        w: 48,
+        h: 36,
+        hitbox: { ox: 6, oy: 6, w: 36, h: 24 },
+        animFrame: 1,
+        animTimer: 0
+      };
+    }
+
+    if (obs) this.obstacles.push(obs);
+  }
+
+  checkCollisions(dino, onChandabazCollision, onLethalCollision) {
+    if (dino.isDead) return;
+    const dh = dino.getHitbox();
+
+    for (const obs of this.obstacles) {
+      const ox = obs.x + obs.hitbox.ox;
+      const oy = obs.y + obs.hitbox.oy;
+      const ow = obs.hitbox.w;
+      const oh = obs.hitbox.h;
+
+      if (dh.x < ox + ow && dh.x + dh.w > ox &&
+          dh.y < oy + oh && dh.y + dh.h > oy) {
+
+        if (obs.type === OBSTACLE_TYPES.CHANDABAZ) {
+          if (!obs.hasHit && !dino.isStunned) {
+            obs.hasHit = true;
+            obs.speechBubble = { text: 'ধন্যবাদ ভাই!', duration: 1.8 };
+            onChandabazCollision();
+          }
+        } else {
+          onLethalCollision();
+          return;
+        }
+      }
+    }
+  }
+
+  render(ctx) {
+    for (const obs of this.obstacles) {
+      const ix = Math.floor(obs.x);
+      let iy = Math.floor(obs.y);
+
+      if (obs.type === OBSTACLE_TYPES.BATTERY_RICKSHAW) {
+        ctx.drawImage(SPRITES.BATTERY_RICKSHAW, ix, iy);
+      } else if (obs.type === OBSTACLE_TYPES.ELECTRIC_POLE) {
+        ctx.drawImage(SPRITES.ELECTRIC_POLE, ix, iy);
+      } else if (obs.type === OBSTACLE_TYPES.CHANDABAZ) {
+        if (obs.cleared && !obs.hasHit) {
+          iy += Math.sin(Date.now() * 0.03) * 2;
+        }
+        ctx.drawImage(SPRITES.CHANDABAZ, ix, iy);
+      } else if (obs.type === OBSTACLE_TYPES.CROW_LOW || obs.type === OBSTACLE_TYPES.CROW_HIGH) {
+        obs.animTimer = (obs.animTimer || 0) + 0.12;
+        const frame = Math.floor(obs.animTimer) % 2 === 0 ? SPRITES.CROW1 : SPRITES.CROW2;
+        ctx.drawImage(frame, ix, iy);
+      }
+    }
+  }
+}
+
+// =====================================================================
+// SECTION 9: LOAD-SHEDDING & REALISTIC LIGHTING ENGINE
+// =====================================================================
+const LS_STATE = {
+  NORMAL: 'NORMAL',
+  WARNING: 'WARNING',
+  BLACKOUT: 'BLACKOUT',
+  RESTORED: 'RESTORED'
+};
+
+class LoadSheddingManager {
+  constructor() {
+    this.maskCanvas = null;
+    this.maskCtx = null;
+    this.reset();
+  }
+
+  reset() {
+    this.state = LS_STATE.NORMAL;
+    this.timer = CONFIG.LS_MIN_INTERVAL + Math.random() * (CONFIG.LS_MAX_INTERVAL - CONFIG.LS_MIN_INTERVAL);
+    this.phaseTimer = 0;
+    this.blackoutDuration = CONFIG.LS_BASE_DURATION;
+    this.bannerText = '';
+    this.bannerTimer = 0;
+    this.flashOpacity = 0;
+    this.handFanAngle = 0;
+  }
+
+  update(dt, score) {
+    this.handFanAngle += dt * 4;
+
+    if (this.bannerTimer > 0) {
+      this.bannerTimer -= dt;
+    }
+
+    if (this.state === LS_STATE.NORMAL) {
+      this.timer -= dt;
+      if (this.timer <= 0) {
+        this.state = LS_STATE.WARNING;
+        this.phaseTimer = CONFIG.LS_WARNING_TIME;
+        audio.playElectricZap();
+      }
+    } else if (this.state === LS_STATE.WARNING) {
+      this.phaseTimer -= dt;
+      if (this.phaseTimer <= 0) {
+        this.state = LS_STATE.BLACKOUT;
+        this.blackoutDuration = Math.min(
+          CONFIG.LS_MAX_DURATION,
+          CONFIG.LS_BASE_DURATION + (score * 0.007)
+        );
+        this.phaseTimer = this.blackoutDuration;
+
+        const banners = ['কারেন্ট গেছে!', 'আবার লোডশেডিং!', 'ট্রান্সফরমার উড়ে গেছে!'];
+        this.bannerText = banners[Math.floor(Math.random() * banners.length)];
+        this.bannerTimer = 2.4;
+
+        audio.playPowerOff();
+        audio.startGenerator();
+      }
+    } else if (this.state === LS_STATE.BLACKOUT) {
+      this.phaseTimer -= dt;
+      if (this.phaseTimer <= 0) {
+        this.state = LS_STATE.RESTORED;
+        this.phaseTimer = 0.35;
+        this.flashOpacity = 0.88;
+        this.bannerText = 'কারেন্ট আসছে!';
+        this.bannerTimer = 2.0;
+
+        audio.stopGenerator();
+        audio.playPowerOn();
+        audio.playCrowdCheer();
+
+        this.timer = CONFIG.LS_MIN_INTERVAL + Math.random() * (CONFIG.LS_MAX_INTERVAL - CONFIG.LS_MIN_INTERVAL);
+      }
+    } else if (this.state === LS_STATE.RESTORED) {
+      this.phaseTimer -= dt;
+      this.flashOpacity = Math.max(0, this.flashOpacity - dt * 2.8);
+      if (this.phaseTimer <= 0) {
+        this.state = LS_STATE.NORMAL;
+      }
+    }
+  }
+
+  renderLighting(ctx, dino, obstacleManager) {
+    if (this.state === LS_STATE.WARNING) {
+      const flicker = Math.sin(this.phaseTimer * 30) > 0.2;
+      if (flicker) {
+        ctx.fillStyle = 'rgba(4, 6, 12, 0.5)';
+        ctx.fillRect(0, 0, W, H);
+      }
+      return;
+    }
+
+    if (this.state === LS_STATE.BLACKOUT) {
+      if (!this.maskCanvas) {
+        const off = createOffscreenCanvas(W, H);
+        this.maskCanvas = off.canvas;
+        this.maskCtx = off.ctx;
+      }
+      const mctx = this.maskCtx;
+      mctx.clearRect(0, 0, W, H);
+
+      mctx.fillStyle = 'rgba(3, 5, 9, 0.94)';
+      mctx.fillRect(0, 0, W, H);
+
+      mctx.save();
+      mctx.globalCompositeOperation = 'destination-out';
+
+      // Dino glowing eyes & gamcha
+      const dex = dino.x + (dino.isDucking ? 72 : 42);
+      const dey = dino.y + (dino.isDucking ? 10 : 8);
+      mctx.beginPath();
+      mctx.arc(dex, dey, 20, 0, Math.PI * 2);
+      mctx.fill();
+
+      // Obstacles
+      for (const obs of obstacleManager.obstacles) {
+        if (obs.type === OBSTACLE_TYPES.BATTERY_RICKSHAW) {
+          // Battery Rickshaw LED projector beam
+          const hx = obs.x + 80;
+          const hy = obs.y + 26;
+          mctx.beginPath();
+          mctx.moveTo(hx, hy);
+          mctx.lineTo(hx - 180, hy - 24);
+          mctx.lineTo(hx - 180, hy + 38);
+          mctx.closePath();
+          mctx.fill();
+        } else if (obs.type === OBSTACLE_TYPES.CHANDABAZ) {
+          const px = obs.x + 54;
+          const py = obs.y + 28;
+          mctx.beginPath();
+          mctx.moveTo(px, py);
+          mctx.lineTo(px - 130, py - 18);
+          mctx.lineTo(px - 130, py + 30);
+          mctx.closePath();
+          mctx.fill();
+        } else if (obs.type === OBSTACLE_TYPES.CROW_LOW || obs.type === OBSTACLE_TYPES.CROW_HIGH) {
+          mctx.beginPath();
+          mctx.arc(obs.x + 36, obs.y + 13, 14, 0, Math.PI * 2);
+          mctx.fill();
+        } else if (obs.type === OBSTACLE_TYPES.ELECTRIC_POLE) {
+          mctx.beginPath();
+          mctx.arc(obs.x + 15, obs.y + 38, 20, 0, Math.PI * 2);
+          mctx.fill();
+        }
+      }
+
+      // Candlelight in apartment windows
+      mctx.beginPath();
+      mctx.arc(120, 80, 16, 0, Math.PI * 2);
+      mctx.arc(420, 75, 16, 0, Math.PI * 2);
+      mctx.arc(740, 85, 16, 0, Math.PI * 2);
+      mctx.fill();
+
+      mctx.restore();
+
+      ctx.drawImage(this.maskCanvas, 0, 0);
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+
+      ctx.fillStyle = PALETTE.CANDLE_GLOW;
+      const candleCand = Math.sin(Date.now() * 0.01) * 0.5 + 0.5;
+      ctx.fillRect(118, 77, 4, 6 + Math.floor(candleCand * 2));
+      ctx.fillRect(418, 72, 4, 6);
+      ctx.fillRect(738, 82, 4, 7);
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
+      for (const obs of obstacleManager.obstacles) {
+        if (obs.type === OBSTACLE_TYPES.BATTERY_RICKSHAW) {
+          const hx = obs.x + 80;
+          const hy = obs.y + 26;
+          ctx.beginPath();
+          ctx.moveTo(hx, hy);
+          ctx.lineTo(hx - 180, hy - 24);
+          ctx.lineTo(hx - 180, hy + 38);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+    }
+
+    if (this.flashOpacity > 0.01) {
+      ctx.fillStyle = 'rgba(255, 255, 255, ' + this.flashOpacity + ')';
+      ctx.fillRect(0, 0, W, H);
+    }
+  }
+}
+
+// =====================================================================
+// SECTION 10: CRISP HIGH-DPI BANGLA OVERLAY CANVAS
+// =====================================================================
+class OverlayRenderer {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.dpr = window.devicePixelRatio || 1;
+    this.width = 960;
+    this.height = 270;
+    this.scale = 1;
+  }
+
+  resize(rect) {
+    this.dpr = window.devicePixelRatio || 1;
+    this.width = rect.width;
+    this.height = rect.height;
+    this.canvas.width = Math.floor(rect.width * this.dpr);
+    this.canvas.height = Math.floor(rect.height * this.dpr);
+    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    this.scale = rect.width / W;
+  }
+
+  toScreenX(gameX) { return gameX * this.scale; }
+  toScreenY(gameY) { return gameY * this.scale; }
+
+  render(score, highScore, isScoreFlashing, lsManager, obstacleManager, dino, gameState) {
+    const ctx = this.ctx;
+    ctx.clearRect(0, 0, this.width, this.height);
+
+    const fontStack = '"Hind Siliguri", "Outfit", "Noto Sans Bengali", sans-serif';
+
+    // 1. HUD: Score & High Score
+    ctx.save();
+    const scoreFontSize = Math.max(16, Math.floor(22 * this.scale));
+    ctx.font = '700 ' + scoreFontSize + 'px ' + fontStack;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+
+    const scoreColor = isScoreFlashing ? '#e74c3c' : '#f1c40f';
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillText('লোডশেডিং: ' + toBangla(score) + ' ঘণ্টা', 20 * this.scale + 1, 14 * this.scale + 1);
+    ctx.fillStyle = scoreColor;
+    ctx.fillText('লোডশেডিং: ' + toBangla(score) + ' ঘণ্টা', 20 * this.scale, 14 * this.scale);
+
+    ctx.font = '600 ' + Math.floor(scoreFontSize * 0.8) + 'px ' + fontStack;
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillText('সর্বোচ্চ রেকর্ড: ' + toBangla(highScore) + ' ঘণ্টা', 20 * this.scale + 1, 40 * this.scale + 1);
+    ctx.fillStyle = '#ecf0f1';
+    ctx.fillText('সর্বোচ্চ রেকর্ড: ' + toBangla(highScore) + ' ঘণ্টা', 20 * this.scale, 40 * this.scale);
+    ctx.restore();
+
+    // 2. Obstacle Speech Bubbles
+    for (const obs of obstacleManager.obstacles) {
+      if (obs.speechBubble) {
+        this.drawSpeechBubble(
+          ctx,
+          obs.speechBubble.text,
+          this.toScreenX(obs.x + obs.w / 2),
+          this.toScreenY(obs.y - 14),
+          fontStack
+        );
+      }
+    }
+
+    // 3. Floating Texts
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+      const ft = floatingTexts[i];
+      ctx.save();
+      const alpha = Math.max(0, ft.life / ft.maxLife);
+      ctx.globalAlpha = alpha;
+      ctx.font = '700 ' + Math.floor(24 * this.scale) + 'px ' + fontStack;
+      ctx.fillStyle = ft.color;
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 3;
+      const sx = this.toScreenX(ft.x);
+      const sy = this.toScreenY(ft.y);
+      ctx.strokeText(ft.text, sx, sy);
+      ctx.fillText(ft.text, sx, sy);
+      ctx.restore();
+    }
+
+    // 4. Alert Banner
+    if (lsManager.bannerTimer > 0) {
+      ctx.save();
+      const bannerSize = Math.max(22, Math.floor(32 * this.scale));
+      ctx.font = '700 ' + bannerSize + 'px ' + fontStack;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const cx = this.width / 2;
+      const cy = 46 * this.scale;
+
+      const isRed = lsManager.state === LS_STATE.BLACKOUT;
+      ctx.fillStyle = isRed ? '#e74c3c' : '#2ecc71';
+      ctx.shadowColor = isRed ? 'rgba(231, 76, 60, 0.85)' : 'rgba(46, 204, 113, 0.85)';
+      ctx.shadowBlur = 14;
+
+      ctx.fillText(lsManager.bannerText, cx, cy);
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    }
+
+    // 5. Hand Fan
+    if (lsManager.state === LS_STATE.BLACKOUT) {
+      this.drawHandFan(ctx, 50 * this.scale, 110 * this.scale, lsManager.handFanAngle);
+    }
+
+    // 6. Start Screen Prompt
+    if (gameState === 'START') {
+      ctx.save();
+      ctx.textAlign = 'center';
+
+      const badgeW = Math.min(this.width * 0.88, 620 * this.scale);
+      const badgeH = 148 * this.scale;
+      const badgeX = (this.width - badgeW) / 2;
+      const badgeY = (this.height - badgeH) / 2;
+
+      ctx.fillStyle = 'rgba(7, 10, 18, 0.85)';
+      ctx.strokeStyle = 'rgba(241, 196, 15, 0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 10 * this.scale);
+      ctx.fill();
+      ctx.stroke();
+
+      const titleSize = Math.max(22, Math.floor(32 * this.scale));
+      ctx.font = '700 ' + titleSize + 'px ' + fontStack;
+      ctx.fillStyle = '#f1c40f';
+      ctx.shadowColor = 'rgba(241, 196, 15, 0.6)';
+      ctx.shadowBlur = 12;
+      ctx.fillText('ডাইনো লোডশেডিং (ঢাকা সংস্করণ)', this.width / 2, badgeY + 34 * this.scale);
+      ctx.shadowBlur = 0;
+
+      const subSize = Math.max(13, Math.floor(17 * this.scale));
+      ctx.font = '600 ' + subSize + 'px ' + fontStack;
+      ctx.fillStyle = '#ff6b6b';
+      ctx.fillText('ব্যাটারি রিকশা ও লোডশেডিংয়ের ভিড়ে ডাইনোকে বাঁচান!', this.width / 2, badgeY + 64 * this.scale);
+
+      const promptSize = Math.max(12, Math.floor(15 * this.scale));
+      ctx.font = '400 ' + promptSize + 'px ' + fontStack;
+      ctx.fillStyle = '#ecf0f1';
+      ctx.fillText('লাফাতে Space / ↑ / ট্যাপ করুন | নিচু হতে ↓ চেপে ধরুন', this.width / 2, badgeY + 92 * this.scale);
+
+      const pulse = 0.6 + 0.4 * Math.sin(Date.now() * 0.006);
+      ctx.globalAlpha = pulse;
+      ctx.fillStyle = '#2ecc71';
+      ctx.font = '700 ' + (promptSize + 2) + 'px ' + fontStack;
+      ctx.fillText('শুরু করতে ট্যাপ বা Space চাপুন', this.width / 2, badgeY + 124 * this.scale);
+
+      ctx.restore();
+    }
+
+    // 7. Paused Screen
+    if (gameState === 'PAUSED') {
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,0,0,0.65)';
+      ctx.fillRect(0, 0, this.width, this.height);
+
+      ctx.font = '700 ' + Math.floor(32 * this.scale) + 'px ' + fontStack;
+      ctx.fillStyle = '#f1c40f';
+      ctx.textAlign = 'center';
+      ctx.fillText('খেলা স্থগিত (PAUSED)', this.width / 2, this.height / 2 - 10 * this.scale);
+      ctx.font = '600 ' + Math.floor(18 * this.scale) + 'px ' + fontStack;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('চালিয়ে যেতে P বা ট্যাপ করুন', this.width / 2, this.height / 2 + 28 * this.scale);
+      ctx.restore();
+    }
+  }
+
+  drawSpeechBubble(ctx, text, sx, sy, fontStack) {
+    ctx.save();
+    const fontSize = Math.max(12, Math.floor(15 * this.scale));
+    ctx.font = '600 ' + fontSize + 'px ' + fontStack;
+    const metrics = ctx.measureText(text);
+    const padX = 10 * this.scale;
+    const padY = 5 * this.scale;
+    const bw = metrics.width + padX * 2;
+    const bh = fontSize + padY * 2;
+    const bx = sx - bw / 2;
+    const by = sy - bh;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#2c3e50';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, bw, bh, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(sx - 5, by + bh);
+    ctx.lineTo(sx, by + bh + 6 * this.scale);
+    ctx.lineTo(sx + 5, by + bh);
+    ctx.fill();
+
+    ctx.fillStyle = '#1c2833';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, sx, by + bh / 2 + 1);
+    ctx.restore();
+  }
+
+  drawHandFan(ctx, x, y, angle) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.sin(angle) * 0.35);
+
+    ctx.fillStyle = '#d35400';
+    ctx.fillRect(-2, 0, 4, 26 * this.scale);
+
+    ctx.fillStyle = '#27ae60';
+    ctx.beginPath();
+    ctx.arc(0, -12 * this.scale, 18 * this.scale, Math.PI, 0);
+    ctx.fill();
+
+    ctx.strokeStyle = '#e74c3c';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(0, -12 * this.scale, 18 * this.scale, Math.PI, 0);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+}
+
+// =====================================================================
+// SECTION 11: SHARE SCORECARD GENERATOR
+// =====================================================================
+function generateShareScorecard(score, highScore, funnyLine) {
+  const cardW = 960;
+  const cardH = 540;
+  const { canvas, ctx } = createOffscreenCanvas(cardW, cardH);
+
+  const grad = ctx.createLinearGradient(0, 0, 0, cardH);
+  grad.addColorStop(0, '#060a14');
+  grad.addColorStop(0.6, '#121b2f');
+  grad.addColorStop(1, '#080c16');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, cardW, cardH);
+
+  ctx.fillStyle = PALETTE.STAR;
+  for (let i = 0; i < 45; i++) {
+    const sx = (i * 97) % cardW;
+    const sy = (i * 43) % 220;
+    ctx.fillRect(sx, sy, 2, 2);
+  }
+  ctx.fillStyle = PALETTE.MOON;
+  ctx.beginPath(); ctx.arc(840, 75, 36, 0, Math.PI * 2); ctx.fill();
+
+  ctx.fillStyle = '#18243b';
+  for (let bx = 0; bx < cardW; bx += 110) {
+    const bh = 140 + ((bx * 7) % 130);
+    ctx.fillRect(bx, 340 - bh, 100, bh);
+  }
+
+  // Metro Rail on Viaduct
+  ctx.fillStyle = '#2d3548';
+  ctx.fillRect(0, 260, cardW, 12);
+  ctx.drawImage(SPRITES.METRO_TRAIN, 240, 230);
+
+  // Road
+  ctx.fillStyle = '#2f3542';
+  ctx.fillRect(0, 334, cardW, 8);
+  ctx.fillStyle = PALETTE.ROAD_ASPHALT;
+  ctx.fillRect(0, 342, cardW, cardH - 342);
+  ctx.fillStyle = PALETTE.ROAD_MARK_YELLOW;
+  for (let rx = 20; rx < cardW; rx += 80) {
+    ctx.fillRect(rx, 420, 45, 5);
+  }
+
+  ctx.save();
+  ctx.drawImage(SPRITES.DINO_RUN1, 60, 245, 66 * 1.5, 70 * 1.5);
+  ctx.drawImage(SPRITES.BATTERY_RICKSHAW, 680, 275, 86 * 1.4, 58 * 1.4);
+  ctx.restore();
+
+  const font = '"Hind Siliguri", "Outfit", sans-serif';
+
+  ctx.fillStyle = '#f1c40f';
+  ctx.font = '700 44px ' + font;
+  ctx.fillText('ডাইনো লোডশেডিং (ঢাকা সংস্করণ)', 200, 80);
+
+  ctx.fillStyle = '#ced6e0';
+  ctx.font = '600 20px ' + font;
+  ctx.fillText('ঢাকা শহরের ব্যাটারি রিকশা ও লোডশেডিংয়ের মাঝে ডাইনোর লড়াই!', 200, 115);
+
+  ctx.fillStyle = 'rgba(231, 76, 60, 0.18)';
+  ctx.strokeStyle = '#e74c3c';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(200, 140, 420, 105, 10);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = '#f5f6fa';
+  ctx.font = '600 22px ' + font;
+  ctx.fillText('আমি কত ঘণ্টা টিকলাম?', 225, 175);
+
+  ctx.fillStyle = '#f1c40f';
+  ctx.font = '700 40px ' + font;
+  ctx.fillText(toBangla(score) + ' ঘণ্টা', 225, 224);
+
+  ctx.fillStyle = '#ecf0f1';
+  ctx.font = '600 20px ' + font;
+  ctx.fillText('(সেরা রেকর্ড: ' + toBangla(highScore) + ' ঘণ্টা)', 420, 222);
+
+  ctx.fillStyle = '#ff6b6b';
+  ctx.font = '600 22px ' + font;
+  ctx.fillText('"' + funnyLine + '"', 60, 395);
+
+  ctx.fillStyle = '#2ecc71';
+  ctx.font = '700 22px ' + font;
+  ctx.fillText('তুমি কত ঘণ্টা টিকতে পারবে? খেলুন এখনই!', 60, 495);
+
+  return canvas;
+}
+
+// =====================================================================
+// SECTION 12: GAME APPLICATION & CORE CONTROLLER
+// =====================================================================
+class GameApp {
+  constructor() {
+    this.pixelCanvas = document.getElementById('pixel-canvas');
+    this.pixelCtx = this.pixelCanvas.getContext('2d');
+
+    this.overlayCanvas = document.getElementById('overlay-canvas');
+    this.overlayRenderer = new OverlayRenderer(this.overlayCanvas);
+
+    this.gameWrapper = document.getElementById('game-wrapper');
+
+    this.modal = document.getElementById('action-modal');
+    this.modalSubtitle = document.getElementById('modal-subtitle');
+    this.modalStats = document.getElementById('modal-stats');
+    this.btnRestart = document.getElementById('btn-restart');
+    this.btnShare = document.getElementById('btn-share');
+    this.btnPause = document.getElementById('btn-pause');
+    this.btnMute = document.getElementById('btn-mute');
+    this.iconPause = document.getElementById('icon-pause');
+    this.iconPlay = document.getElementById('icon-play');
+    this.iconSound = document.getElementById('icon-sound');
+    this.iconMuted = document.getElementById('icon-muted');
+    this.toast = document.getElementById('toast');
+
+    this.state = 'START';
+    this.score = 0;
+    this.highScore = parseInt(localStorage.getItem('dino_loadshedding_highscore') || '0', 10);
+    this.speed = CONFIG.INITIAL_SPEED;
+    this.scoreTimer = 0;
+    this.scoreBlinkTimer = 0;
+    this.lastMilestone = 0;
+    this.currentGameOverLine = '';
+
+    this.world = new DhakaWorld();
+    this.dino = new DinoHero();
+    this.obstacles = new ObstacleManager();
+    this.loadShedding = new LoadSheddingManager();
+
+    this.keys = { jump: false, duck: false };
+
+    this.initEventListeners();
+    this.updateAudioIcons();
+  }
+
+  initEventListeners() {
+    window.addEventListener('resize', () => this.handleResize());
+    this.handleResize();
+
+    window.addEventListener('keydown', (e) => {
+      audio.ensureContext();
+      if (e.code === 'Space' || e.code === 'ArrowUp') {
+        e.preventDefault();
+        this.handleJumpPress();
+      } else if (e.code === 'ArrowDown') {
+        e.preventDefault();
+        this.handleDuckPress(true);
+      } else if (e.code === 'KeyP') {
+        e.preventDefault();
+        this.togglePause();
+      } else if (e.code === 'KeyM') {
+        e.preventDefault();
+        this.toggleMute();
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'Space' || e.code === 'ArrowUp') {
+        this.handleJumpRelease();
+      } else if (e.code === 'ArrowDown') {
+        this.handleDuckPress(false);
+      }
+    });
+
+    this.pixelCanvas.addEventListener('pointerdown', (e) => {
+      audio.ensureContext();
+      e.preventDefault();
+      const rect = this.pixelCanvas.getBoundingClientRect();
+      const clickY = e.clientY - rect.top;
+      if (clickY > rect.height * 0.6) {
+        this.handleDuckPress(true);
+      } else {
+        this.handleJumpPress();
+      }
+    });
+
+    window.addEventListener('pointerup', (e) => {
+      this.handleJumpRelease();
+      this.handleDuckPress(false);
+    });
+
+    this.btnRestart.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.restartGame();
+    });
+
+    this.btnShare.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.shareScore();
+    });
+
+    this.btnPause.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.togglePause();
+    });
+
+    this.btnMute.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleMute();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && this.state === 'PLAYING') {
+        this.togglePause();
+      }
+    });
+  }
+
+  handleJumpPress() {
+    if (this.state === 'START') {
+      this.startGame();
+    } else if (this.state === 'GAMEOVER') {
+      this.restartGame();
+    } else if (this.state === 'PLAYING') {
+      this.dino.jump();
+    }
+  }
+
+  handleJumpRelease() {
+    if (this.state === 'PLAYING') {
+      this.dino.releaseJump();
+    }
+  }
+
+  handleDuckPress(isHeld) {
+    if (this.state === 'PLAYING') {
+      this.keys.duck = isHeld;
+    }
+  }
+
+  startGame() {
+    this.state = 'PLAYING';
+    this.modal.classList.remove('visible');
+  }
+
+  restartGame() {
+    this.score = 0;
+    this.speed = CONFIG.INITIAL_SPEED;
+    this.scoreTimer = 0;
+    this.scoreBlinkTimer = 0;
+    this.lastMilestone = 0;
+
+    this.dino.reset();
+    this.obstacles.reset();
+    this.loadShedding.reset();
+    floatingTexts.length = 0;
+
+    this.modal.classList.remove('visible');
+    this.state = 'PLAYING';
+  }
+
+  togglePause() {
+    if (this.state === 'PLAYING') {
+      this.state = 'PAUSED';
+      this.iconPause.style.display = 'none';
+      this.iconPlay.style.display = 'block';
+    } else if (this.state === 'PAUSED') {
+      this.state = 'PLAYING';
+      this.iconPause.style.display = 'block';
+      this.iconPlay.style.display = 'none';
+    }
+  }
+
+  toggleMute() {
+    const isMuted = audio.toggleMute();
+    this.updateAudioIcons();
+  }
+
+  updateAudioIcons() {
+    if (audio.muted) {
+      this.iconSound.style.display = 'none';
+      this.iconMuted.style.display = 'block';
+    } else {
+      this.iconSound.style.display = 'block';
+      this.iconMuted.style.display = 'none';
+    }
+  }
+
+  triggerGameOver() {
+    this.state = 'GAMEOVER';
+    this.dino.isDead = true;
+    audio.playGameOver();
+
+    if (this.score > this.highScore) {
+      this.highScore = this.score;
+      localStorage.setItem('dino_loadshedding_highscore', this.highScore);
+    }
+
+    this.currentGameOverLine = GAME_OVER_LINES[Math.floor(Math.random() * GAME_OVER_LINES.length)];
+
+    this.modalSubtitle.innerText = '"' + this.currentGameOverLine + '"';
+    this.modalStats.innerText = 'অর্জিত স্কোর: ' + toBangla(this.score) + ' ঘণ্টা | সেরা রেকর্ড: ' + toBangla(this.highScore) + ' ঘণ্টা';
+    this.modal.classList.add('visible');
+  }
+
+  async shareScore() {
+    const cardCanvas = generateShareScorecard(this.score, this.highScore, this.currentGameOverLine);
+
+    cardCanvas.toBlob(async (blob) => {
+      if (!blob) return;
+
+      const file = new File([blob], 'dino-loadshedding-score.png', { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: 'ডাইনো লোডশেডিং স্কোর কার্ড',
+            text: 'ঢাকা শহরের লোডশেডিং ও ব্যাটারি রিকশার মাঝে আমি টিকেছি ' + toBangla(this.score) + ' ঘণ্টা! তুমি কতক্ষণ পারবে?'
+          });
+          return;
+        } catch (err) {
+          console.log('Share canceled or failed:', err);
+        }
+      }
+
+      const a = document.createElement('a');
+      a.download = 'dino-loadshedding-' + this.score + '.png';
+      a.href = URL.createObjectURL(blob);
+      a.click();
+      URL.revokeObjectURL(a.href);
+      this.showToast('স্কোর কার্ড ডাউনলোড সম্পন্ন!');
+    }, 'image/png');
+  }
+
+  showToast(msg) {
+    this.toast.innerText = msg;
+    this.toast.classList.add('show');
+    setTimeout(() => this.toast.classList.remove('show'), 2400);
+  }
+
+  handleResize() {
+    const rect = this.gameWrapper.getBoundingClientRect();
+    this.overlayRenderer.resize(rect);
+  }
+
+  handleChandabazCollision() {
+    const deduction = Math.max(30, Math.floor(this.score * 0.15));
+    this.score = Math.max(0, this.score - deduction);
+    this.scoreBlinkTimer = 1.0;
+
+    spawnFloatingText('-' + toBangla(deduction), this.dino.x + 24, this.dino.y - 12, PALETTE.ALERT_RED);
+    this.dino.hitChandabaz();
+  }
+
+  update(dt) {
+    if (this.state === 'PLAYING') {
+      this.speed = Math.min(CONFIG.MAX_SPEED, this.speed + CONFIG.ACCELERATION * dt);
+
+      this.scoreTimer += dt * 10;
+      if (this.scoreTimer >= 1) {
+        this.score += Math.floor(this.scoreTimer);
+        this.scoreTimer = 0;
+
+        const milestone = Math.floor(this.score / 100);
+        if (milestone > this.lastMilestone) {
+          this.lastMilestone = milestone;
+          audio.playMilestone();
+          this.scoreBlinkTimer = 1.2;
+        }
+      }
+
+      this.world.update(dt, this.speed);
+      this.dino.update(dt, this.keys.duck);
+      this.obstacles.update(dt, this.speed, this.score, this.dino);
+      this.loadShedding.update(dt, this.score);
+
+      this.obstacles.checkCollisions(
+        this.dino,
+        () => this.handleChandabazCollision(),
+        () => this.triggerGameOver()
+      );
+    } else if (this.state === 'START') {
+      this.world.update(dt, 75);
+      this.dino.update(dt, false);
+    }
+
+    if (this.scoreBlinkTimer > 0) {
+      this.scoreBlinkTimer -= dt;
+    }
+
+    for (const p of particlePool.pool) {
+      if (!p.active) continue;
+      p.life -= dt;
+      if (p.life <= 0) {
+        p.active = false;
+        continue;
+      }
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+
+      if (p.type === 'spark') {
+        p.vy += 320 * dt;
+      } else if (p.type === 'taka') {
+        p.vy += 220 * dt;
+        p.rot += p.vrot * dt;
+        p.vx *= 0.98;
+      }
+    }
+
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+      const ft = floatingTexts[i];
+      ft.life -= dt;
+      ft.y += ft.vy * dt;
+      if (ft.life <= 0) {
+        floatingTexts.splice(i, 1);
+      }
+    }
+  }
+
+  render() {
+    const ctx = this.pixelCtx;
+    ctx.clearRect(0, 0, W, H);
+
+    // 1. World & Parallax
+    this.world.render(ctx);
+
+    // 2. Obstacles
+    this.obstacles.render(ctx);
+
+    // 3. Dino
+    this.dino.render(ctx);
+
+    // 4. Particles
+    for (const p of particlePool.pool) {
+      if (!p.active) continue;
+      ctx.save();
+      if (p.type === 'taka') {
+        ctx.translate(Math.floor(p.x), Math.floor(p.y));
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.roundRect(-6, -3, 12, 6, 1);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-2, -1, 4, 2);
+      } else {
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(Math.floor(p.x), Math.floor(p.y), p.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // 5. Load-Shedding & Lighting Effects
+    this.loadShedding.renderLighting(ctx, this.dino, this.obstacles);
+
+    // 6. Overlay Canvas
+    const isFlashing = this.scoreBlinkTimer > 0 && Math.floor(this.scoreBlinkTimer * 10) % 2 === 0;
+    this.overlayRenderer.render(
+      this.score,
+      this.highScore,
+      isFlashing,
+      this.loadShedding,
+      this.obstacles,
+      this.dino,
+      this.state
+    );
+  }
+}
+
+// =====================================================================
+// FIXED-TIMESTEP BOOTSTRAP
+// =====================================================================
+let game;
+
+async function bootstrap() {
+  try {
+    await document.fonts.load('16px "Hind Siliguri"');
+    await document.fonts.ready;
+  } catch (err) {
+    console.warn('Font loaded with system fallback:', err);
+  }
+
+  initSprites();
+  game = new GameApp();
+
+  let lastTime = performance.now();
+  let accumulator = 0;
+  const fixedStep = CONFIG.STEP;
+
+  function loop(currentTime) {
+    let frameTime = (currentTime - lastTime) / 1000;
+    if (frameTime > CONFIG.MAX_FRAME) frameTime = CONFIG.MAX_FRAME;
+    lastTime = currentTime;
+
+    accumulator += frameTime;
+    while (accumulator >= fixedStep) {
+      game.update(fixedStep);
+      accumulator -= fixedStep;
+    }
+
+    game.render();
+    requestAnimationFrame(loop);
+  }
+
+  requestAnimationFrame(loop);
+}
+
+window.addEventListener('DOMContentLoaded', bootstrap);
+</script>
+</body>
+</html>
