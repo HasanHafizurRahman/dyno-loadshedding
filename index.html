@@ -510,12 +510,14 @@ function initSprites() {
   SPRITES.DINO_DUCK1 = extractCleanChromeSprite(chromeSpriteImg, 2206, 2, 118, 94, 118, 94);
   SPRITES.DINO_DUCK2 = extractCleanChromeSprite(chromeSpriteImg, 2324, 2, 118, 94, 118, 94);
 
-  // 2. BATTERY RICKSHAW (ব্যাটারি অটোরিকশা) - 86 x 58 (মুখোমুখি / Faces oncoming Dino)
-  {
+  // 2. BATTERY RICKSHAW (ব্যাটারি অটোরিকশা) - 86 x 58 (Animated running frames, facing oncoming Dino)
+  SPRITES.BATTERY_RICKSHAW_FRAMES = [];
+  for (let f = 1; f <= 3; f++) {
     const { canvas, ctx } = createOffscreenCanvas(86, 58);
-    drawBatteryRickshawSprite(ctx);
-    SPRITES.BATTERY_RICKSHAW = canvas;
+    drawBatteryRickshawSprite(ctx, f);
+    SPRITES.BATTERY_RICKSHAW_FRAMES.push(canvas);
   }
+  SPRITES.BATTERY_RICKSHAW = SPRITES.BATTERY_RICKSHAW_FRAMES[0];
 
   // 2B. DIRTY DUSTBIN (ঢাকা সিটি কর্পোরেশন ময়লার ডাস্টবিন / DNCC Dumpster) - 64 x 52
   {
@@ -581,141 +583,146 @@ function initSprites() {
 // AUTHENTIC DHAKA BATTERY RICKSHAW (ব্যাটারি অটোরিকশা / ইজিবাইক)
 // Facing LEFT: Directly Face-to-Face with Oncoming Dino Hero
 // ---------------------------------------------------------------------
-function drawBatteryRickshawSprite(ctx) {
-  // Size: 86 x 58 (Facing LEFT towards Dino)
+function drawBatteryRickshawSprite(ctx, frame = 1) {
+  // Size: 86 x 58 (Facing LEFT towards Dino, Animated with running frames)
   ctx.save();
+
+  const rotAngle = (frame === 1) ? 0 : (frame === 2 ? Math.PI / 6 : Math.PI / 3);
+  const bump = (frame === 2) ? -1 : 0;
+  const windFlutter = (frame === 2 || frame === 3) ? 1 : 0;
 
   // 1. Steel Tubular Frame
   ctx.strokeStyle = '#2d3436';
   ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.moveTo(74, 45); ctx.lineTo(42, 45); ctx.lineTo(20, 45);
-  ctx.lineTo(10, 28); ctx.lineTo(6, 46);
+  ctx.moveTo(74, 45 + bump); ctx.lineTo(42, 45 + bump); ctx.lineTo(20, 45 + bump);
+  ctx.lineTo(10, 28 + bump); ctx.lineTo(6, 46 + bump);
   ctx.stroke();
 
   // Heavy Battery Box beneath seat
   ctx.fillStyle = PALETTE.RICKSHAW_BATTERY_BOX;
   ctx.beginPath();
-  ctx.roundRect(34, 34, 30, 14, 2);
+  ctx.roundRect(34, 34 + bump, 30, 14, 2);
   ctx.fill();
   ctx.fillStyle = '#f1c40f';
-  ctx.fillRect(47, 38, 4, 6);
+  ctx.fillRect(47, 38 + bump, 4, 6);
   ctx.fillStyle = '#e74c3c';
-  ctx.fillRect(48, 40, 2, 2);
+  ctx.fillRect(48, 40 + bump, 2, 2);
 
   // 2. Passenger Carriage & Seat (On the Right / Back)
   ctx.fillStyle = PALETTE.RICKSHAW_FRAME; // Royal Blue
   ctx.beginPath();
-  ctx.roundRect(38, 22, 40, 16, [4, 4, 2, 2]);
+  ctx.roundRect(38, 22 + bump, 40, 16, [4, 4, 2, 2]);
   ctx.fill();
 
   // Seat cushion (Red & Gold)
   ctx.fillStyle = '#c0392b';
-  ctx.fillRect(44, 24, 26, 6);
+  ctx.fillRect(44, 24 + bump, 26, 6);
   ctx.fillStyle = '#f39c12';
-  ctx.fillRect(46, 25, 22, 2);
+  ctx.fillRect(46, 25 + bump, 22, 2);
 
   // Armrest railing
   ctx.strokeStyle = PALETTE.RICKSHAW_CHROME;
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(76, 22); ctx.lineTo(76, 14); ctx.lineTo(48, 14); ctx.lineTo(48, 22);
+  ctx.moveTo(76, 22 + bump); ctx.lineTo(76, 14 + bump); ctx.lineTo(48, 14 + bump); ctx.lineTo(48, 22 + bump);
   ctx.stroke();
 
   // 3. Dhaka Rickshaw Hood / Canopy with Rickshaw Art (রিকশা আর্ট)
   ctx.fillStyle = PALETTE.RICKSHAW_HOOD_RED;
   ctx.beginPath();
-  ctx.moveTo(80, 22);
-  ctx.quadraticCurveTo(78, 4, 56, 2);
-  ctx.quadraticCurveTo(40, 4, 38, 16);
-  ctx.lineTo(80, 22);
+  ctx.moveTo(80, 22 + bump);
+  ctx.quadraticCurveTo(78, 4 + bump, 56, 2 + bump);
+  ctx.quadraticCurveTo(40, 4 + bump, 38, 16 + bump);
+  ctx.lineTo(80, 22 + bump);
   ctx.closePath();
   ctx.fill();
 
   // Yellow scallop band
   ctx.fillStyle = PALETTE.RICKSHAW_HOOD_YELLOW;
   ctx.beginPath();
-  ctx.moveTo(78, 16);
-  ctx.quadraticCurveTo(76, 8, 56, 6);
-  ctx.quadraticCurveTo(44, 8, 42, 16);
-  ctx.lineTo(46, 19);
-  ctx.quadraticCurveTo(56, 10, 76, 19);
+  ctx.moveTo(78, 16 + bump);
+  ctx.quadraticCurveTo(76, 8 + bump, 56, 6 + bump);
+  ctx.quadraticCurveTo(44, 8 + bump, 42, 16 + bump);
+  ctx.lineTo(46, 19 + bump);
+  ctx.quadraticCurveTo(56, 10 + bump, 76, 19 + bump);
   ctx.fill();
 
   // Floral Rickshaw Painting Motif
   ctx.fillStyle = PALETTE.RICKSHAW_FLOWER;
-  ctx.beginPath(); ctx.arc(58, 11, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(58, 11 + bump, 4, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = '#2ecc71';
-  ctx.fillRect(53, 11, 3, 2); ctx.fillRect(61, 11, 3, 2);
+  ctx.fillRect(53, 11 + bump, 3, 2); ctx.fillRect(61, 11 + bump, 3, 2);
 
-  // Tassels / fringes (ঝালর)
+  // Tassels / fringes (ঝালর) fluttering in the high-speed oncoming wind!
   ctx.fillStyle = '#f1c40f';
   for (let fx = 42; fx <= 74; fx += 5) {
-    ctx.fillRect(fx, 20, 2, 4);
+    ctx.fillRect(fx + windFlutter, 20 + bump, 2, 4);
   }
 
   // 4. Rickshaw Driver (মামা) in Checkered Lungi (Facing LEFT towards Dino)
+  const driverLean = (frame === 2 || frame === 3) ? -1 : 0;
   ctx.fillStyle = '#1e272e';
-  ctx.fillRect(24, 26, 10, 4); // saddle
+  ctx.fillRect(24, 26 + bump, 10, 4); // saddle
 
   ctx.fillStyle = PALETTE.SHIRT_RED;
-  ctx.beginPath(); ctx.roundRect(26, 16, 12, 14, 3); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(26 + driverLean, 16 + bump, 12, 14, 3); ctx.fill();
 
   ctx.fillStyle = '#d63031';
-  ctx.fillRect(27, 17, 10, 3);
+  ctx.fillRect(27 + driverLean, 17 + bump, 10, 3);
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(31, 17, 3, 2);
+  ctx.fillRect(31 + driverLean, 17 + bump, 3, 2);
 
   // Driver head facing left
   ctx.fillStyle = PALETTE.SKIN_1;
-  ctx.beginPath(); ctx.arc(32, 11, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(32 + driverLean, 11 + bump, 5, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = '#1e272e';
-  ctx.beginPath(); ctx.arc(32, 9, 5.2, Math.PI, 0); ctx.fill();
-  ctx.fillRect(27, 9, 6, 2);
+  ctx.beginPath(); ctx.arc(32 + driverLean, 9 + bump, 5.2, Math.PI, 0); ctx.fill();
+  ctx.fillRect(27 + driverLean, 9 + bump, 6, 2);
 
   // Arm reaching forward-left to handlebars
   ctx.strokeStyle = PALETTE.SKIN_1;
   ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.moveTo(30, 20); ctx.lineTo(18, 18); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(30 + driverLean, 20 + bump); ctx.lineTo(18, 18 + bump); ctx.stroke();
 
   // Checkered Lungi
   ctx.fillStyle = PALETTE.LUNGI_GREEN;
-  ctx.beginPath(); ctx.roundRect(22, 28, 14, 14, 2); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(22, 28 + bump, 14, 14, 2); ctx.fill();
   ctx.fillStyle = PALETTE.LUNGI_CHECK;
-  ctx.fillRect(25, 29, 2, 12);
-  ctx.fillRect(30, 29, 2, 12);
-  ctx.fillRect(22, 34, 14, 1.5);
+  ctx.fillRect(25, 29 + bump, 2, 12);
+  ctx.fillRect(30, 29 + bump, 2, 12);
+  ctx.fillRect(22, 34 + bump, 14, 1.5);
 
   ctx.fillStyle = PALETTE.SKIN_1;
-  ctx.fillRect(22, 40, 4, 6);
+  ctx.fillRect(22, 40 + bump, 4, 6);
 
   // 5. Handlebars & High-power LED Projector Headlight (Facing LEFT towards Dino)
   ctx.strokeStyle = PALETTE.RICKSHAW_CHROME;
   ctx.lineWidth = 2.5;
   ctx.beginPath();
-  ctx.moveTo(12, 30); ctx.lineTo(16, 16); ctx.lineTo(20, 17);
+  ctx.moveTo(12, 30 + bump); ctx.lineTo(16, 16 + bump); ctx.lineTo(20, 17 + bump);
   ctx.stroke();
 
   ctx.fillStyle = '#00cec9';
-  ctx.fillRect(15, 15, 3, 2);
+  ctx.fillRect(15, 15 + bump, 3, 2);
 
   // Projector LED headlight pointing left
   ctx.fillStyle = PALETTE.RICKSHAW_CHROME;
-  ctx.beginPath(); ctx.roundRect(4, 22, 6, 8, 2); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(4, 22 + bump, 6, 8, 2); ctx.fill();
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(4, 23, 3, 6);
-  ctx.fillStyle = '#00ffff';
-  ctx.fillRect(4, 25, 2, 2);
+  ctx.fillRect(4, 23 + bump, 3, 6);
+  ctx.fillStyle = (frame === 2) ? '#ffffff' : '#00ffff';
+  ctx.fillRect(4, 25 + bump, 2, 2);
 
-  // 6. Spoked Wheels
-  drawRickshawWheel(ctx, 12, 46, 10); // Front wheel (facing left)
-  drawRickshawWheel(ctx, 70, 46, 10); // Rear wheel
+  // 6. Spoked Wheels - Rapidly Spinning!
+  drawRickshawWheel(ctx, 12, 46, 10, rotAngle); // Front wheel
+  drawRickshawWheel(ctx, 70, 46, 10, rotAngle); // Rear wheel
 
   // Rear Mudguard & Red Tail Reflector
   ctx.fillStyle = '#2c3e50';
-  ctx.fillRect(78, 40, 4, 12);
+  ctx.fillRect(78, 40 + bump, 4, 12);
   ctx.fillStyle = '#e74c3c';
-  ctx.fillRect(79, 43, 2, 4);
+  ctx.fillRect(79, 43 + bump, 2, 4);
 
   ctx.restore();
 }
@@ -944,7 +951,7 @@ function drawFly(ctx, x, y) {
   ctx.fillRect(x + 1, y - 1, 1, 1);
 }
 
-function drawRickshawWheel(ctx, cx, cy, r) {
+function drawRickshawWheel(ctx, cx, cy, r, rotAngle = 0) {
   ctx.fillStyle = '#1e272e';
   ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
 
@@ -957,7 +964,7 @@ function drawRickshawWheel(ctx, cx, cy, r) {
 
   ctx.strokeStyle = 'rgba(255,255,255,0.6)';
   ctx.lineWidth = 1;
-  for (let a = 0; a < Math.PI * 2; a += Math.PI / 3) {
+  for (let a = rotAngle; a < rotAngle + Math.PI * 2; a += Math.PI / 3) {
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.lineTo(cx + Math.cos(a) * (r - 2), cy + Math.sin(a) * (r - 2));
@@ -2245,11 +2252,12 @@ class ObstacleManager {
 
     for (let i = this.obstacles.length - 1; i >= 0; i--) {
       const obs = this.obstacles[i];
-      let obsSpeed = (obs.type === OBSTACLE_TYPES.CROW_LOW || obs.type === OBSTACLE_TYPES.CROW_HIGH)
-        ? (speed + 45)
-        : speed;
-
-      if (obs.type === OBSTACLE_TYPES.CHANDABAZ && obs.hasHit) {
+      let obsSpeed = speed;
+      if (obs.type === OBSTACLE_TYPES.CROW_LOW || obs.type === OBSTACLE_TYPES.CROW_HIGH) {
+        obsSpeed = speed + 45;
+      } else if (obs.type === OBSTACLE_TYPES.BATTERY_RICKSHAW) {
+        obsSpeed = speed + 105; // Battery rickshaw running on its own electric motor speed!
+      } else if (obs.type === OBSTACLE_TYPES.CHANDABAZ && obs.hasHit) {
         obsSpeed = speed + 130;
       }
 
@@ -2263,10 +2271,19 @@ class ObstacleManager {
           audio.playElectricZap();
         }
       } else if (obs.type === OBSTACLE_TYPES.BATTERY_RICKSHAW) {
-        if (!obs.hasHonked && obs.x < 560 && obs.x > 320) {
+        // Continuous road dust kicked up behind wheels while running
+        obs.dustTimer = (obs.dustTimer || 0) + dt;
+        if (obs.dustTimer > 0.11) {
+          obs.dustTimer = 0;
+          if (obs.x > -20 && obs.x < W + 10) {
+            spawnDust(obs.x + 72, GROUND_Y);
+          }
+        }
+
+        if (!obs.hasHonked && obs.x < 580 && obs.x > 300) {
           obs.hasHonked = true;
           audio.playRickshawHorn();
-          const shouts = ['সাইড দেন মামা!', 'আরে ভাই দেখে চালান!', 'ব্রেক ধরে না মামা!'];
+          const shouts = ['সাইড দেন মামা!', 'আরে ভাই দেখে চালান!', 'ব্রেক ধরে না মামা!', 'ফুল চার্জে চলতেছি মামা!'];
           obs.speechBubble = { text: shouts[Math.floor(Math.random() * shouts.length)], duration: 1.5 };
         }
       } else if (obs.type === OBSTACLE_TYPES.DIRTY_DUSTBIN) {
@@ -2315,9 +2332,6 @@ class ObstacleManager {
 
   spawnRandomObstacle(speed, score) {
     const jumpAirTime = 0.65;
-    const minClearance = speed * jumpAirTime + 110;
-    const extraRandomGap = 90 + Math.random() * 210;
-    this.nextSpawnDistance = minClearance + extraRandomGap;
 
     const candidates = [
       OBSTACLE_TYPES.BATTERY_RICKSHAW,
@@ -2333,6 +2347,11 @@ class ObstacleManager {
     const type = candidates[Math.floor(Math.random() * candidates.length)];
     let obs = null;
 
+    const effectiveSpeed = (type === OBSTACLE_TYPES.BATTERY_RICKSHAW) ? (speed + 105) : speed;
+    const minClearance = effectiveSpeed * jumpAirTime + 120;
+    const extraRandomGap = 90 + Math.random() * 200;
+    this.nextSpawnDistance = minClearance + extraRandomGap;
+
     if (type === OBSTACLE_TYPES.BATTERY_RICKSHAW) {
       obs = {
         type,
@@ -2341,6 +2360,8 @@ class ObstacleManager {
         w: 86,
         h: 58,
         hitbox: { ox: 6, oy: 6, w: 74, h: 50 },
+        animTimer: 0,
+        dustTimer: 0,
         hasHonked: false,
         speechBubble: null
       };
@@ -2441,7 +2462,9 @@ class ObstacleManager {
       let iy = Math.floor(obs.y);
 
       if (obs.type === OBSTACLE_TYPES.BATTERY_RICKSHAW) {
-        ctx.drawImage(SPRITES.BATTERY_RICKSHAW, ix, iy);
+        obs.animTimer = (obs.animTimer || 0) + 0.22;
+        const frameIdx = Math.floor(obs.animTimer) % SPRITES.BATTERY_RICKSHAW_FRAMES.length;
+        ctx.drawImage(SPRITES.BATTERY_RICKSHAW_FRAMES[frameIdx], ix, iy);
       } else if (obs.type === OBSTACLE_TYPES.DIRTY_DUSTBIN) {
         obs.animTimer = (obs.animTimer || 0) + 0.12;
         const frame = Math.floor(obs.animTimer) % 2 === 0 ? SPRITES.DIRTY_DUSTBIN_1 : SPRITES.DIRTY_DUSTBIN_2;
