@@ -355,6 +355,16 @@ const PALETTE = {
   RICKSHAW_CHROME: '#dfe4ea',
   RICKSHAW_FLOWER: '#fd79a8',
 
+  // Dhaka Dustbin & Municipal Waste
+  DUSTBIN_GREEN: '#1e4d2b',
+  DUSTBIN_RUST: '#78350f',
+  DUSTBIN_DARK: '#0d2818',
+  TRASH_POLY_BLUE: '#0984e3',
+  TRASH_POLY_PINK: '#e84393',
+  TRASH_POLY_YELLOW: '#f1c40f',
+  TRASH_COCONUT: '#6ab04c',
+  STENCH_GREEN: '#2ed573',
+
   // চাঁদাবাজ Group
   SKIN_1: '#b8734a',
   SKIN_2: '#935532',
@@ -392,7 +402,11 @@ const GAME_OVER_LINES = [
   "পোল ছিল সোজা, মাথা হইলো বাঁকা! শর্ট সার্কিট খেয়ে প্যারালাইজড!",
   "কাকের সাথে গুঁতো খেয়ে পতন! ডাইনো আর উড়তে পারল না ভাই!",
   "মিটারের বিল বাকি, তাই বিদ্যুৎ উন্নয়ন বোর্ড লাইন কেটে দিল!",
-  "মামা একটু আস্তে চালান! ব্যাটারি রিকশার ধাক্কায় ডাইনো কুপোকাত!"
+  "মামা একটু আস্তে চালান! ব্যাটারি রিকশার ধাক্কায় ডাইনো কুপোকাত!",
+  "রাস্তার উপচে পড়া ময়লার ডাস্টবিনে ধাক্কা খেয়ে ডাইনো দুর্গন্ধেই কুপোকাত!",
+  "ঢাকা সিটি কর্পোরেশনের ডাস্টবিনে আছাড় খেয়ে ডাইনোর ফাইনাল পতন!",
+  "ডাস্টবিনের পলিথিন আর পচা ময়লায় পা পিছলে ডাইনো চিৎপটাং!",
+  "ডাস্টবিনের মাছির ঝাঁক দেখে ডাইনো রাস্তা ভুলে ধপাস করে পড়ল!"
 ];
 
 function createOffscreenCanvas(width, height) {
@@ -496,11 +510,22 @@ function initSprites() {
   SPRITES.DINO_DUCK1 = extractCleanChromeSprite(chromeSpriteImg, 2206, 2, 118, 94, 118, 94);
   SPRITES.DINO_DUCK2 = extractCleanChromeSprite(chromeSpriteImg, 2324, 2, 118, 94, 118, 94);
 
-  // 2. BATTERY RICKSHAW (ব্যাটারি অটোরিকশা) - 86 x 58
+  // 2. BATTERY RICKSHAW (ব্যাটারি অটোরিকশা) - 86 x 58 (মুখোমুখি / Faces oncoming Dino)
   {
     const { canvas, ctx } = createOffscreenCanvas(86, 58);
     drawBatteryRickshawSprite(ctx);
     SPRITES.BATTERY_RICKSHAW = canvas;
+  }
+
+  // 2B. DIRTY DUSTBIN (ঢাকা সিটি কর্পোরেশন ময়লার ডাস্টবিন / DNCC Dumpster) - 64 x 52
+  {
+    const { canvas: d1, ctx: ctxD1 } = createOffscreenCanvas(64, 52);
+    drawDhakaDustbinSprite(ctxD1, 1);
+    SPRITES.DIRTY_DUSTBIN_1 = d1;
+
+    const { canvas: d2, ctx: ctxD2 } = createOffscreenCanvas(64, 52);
+    drawDhakaDustbinSprite(ctxD2, 2);
+    SPRITES.DIRTY_DUSTBIN_2 = d2;
   }
 
   // 3. CHANDABAZ GROUP (চাঁদাবাজ সিন্ডিকেট) - 84 x 66
@@ -554,137 +579,369 @@ function initSprites() {
 
 // ---------------------------------------------------------------------
 // AUTHENTIC DHAKA BATTERY RICKSHAW (ব্যাটারি অটোরিকশা / ইজিবাইক)
+// Facing LEFT: Directly Face-to-Face with Oncoming Dino Hero
 // ---------------------------------------------------------------------
 function drawBatteryRickshawSprite(ctx) {
-  // Size: 86 x 58
+  // Size: 86 x 58 (Facing LEFT towards Dino)
   ctx.save();
 
   // 1. Steel Tubular Frame
   ctx.strokeStyle = '#2d3436';
   ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.moveTo(12, 45); ctx.lineTo(44, 45); ctx.lineTo(66, 45);
-  ctx.lineTo(76, 28); ctx.lineTo(80, 46);
+  ctx.moveTo(74, 45); ctx.lineTo(42, 45); ctx.lineTo(20, 45);
+  ctx.lineTo(10, 28); ctx.lineTo(6, 46);
   ctx.stroke();
 
   // Heavy Battery Box beneath seat
   ctx.fillStyle = PALETTE.RICKSHAW_BATTERY_BOX;
   ctx.beginPath();
-  ctx.roundRect(22, 34, 30, 14, 2);
+  ctx.roundRect(34, 34, 30, 14, 2);
   ctx.fill();
   ctx.fillStyle = '#f1c40f';
-  ctx.fillRect(35, 38, 4, 6);
+  ctx.fillRect(47, 38, 4, 6);
   ctx.fillStyle = '#e74c3c';
-  ctx.fillRect(36, 40, 2, 2);
+  ctx.fillRect(48, 40, 2, 2);
 
-  // 2. Passenger Carriage & Seat
+  // 2. Passenger Carriage & Seat (On the Right / Back)
   ctx.fillStyle = PALETTE.RICKSHAW_FRAME; // Royal Blue
   ctx.beginPath();
-  ctx.roundRect(8, 22, 40, 16, [4, 4, 2, 2]);
+  ctx.roundRect(38, 22, 40, 16, [4, 4, 2, 2]);
   ctx.fill();
 
   // Seat cushion (Red & Gold)
   ctx.fillStyle = '#c0392b';
-  ctx.fillRect(16, 24, 26, 6);
+  ctx.fillRect(44, 24, 26, 6);
   ctx.fillStyle = '#f39c12';
-  ctx.fillRect(18, 25, 22, 2);
+  ctx.fillRect(46, 25, 22, 2);
 
   // Armrest railing
   ctx.strokeStyle = PALETTE.RICKSHAW_CHROME;
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(10, 22); ctx.lineTo(10, 14); ctx.lineTo(38, 14); ctx.lineTo(38, 22);
+  ctx.moveTo(76, 22); ctx.lineTo(76, 14); ctx.lineTo(48, 14); ctx.lineTo(48, 22);
   ctx.stroke();
 
   // 3. Dhaka Rickshaw Hood / Canopy with Rickshaw Art (রিকশা আর্ট)
   ctx.fillStyle = PALETTE.RICKSHAW_HOOD_RED;
   ctx.beginPath();
-  ctx.moveTo(6, 22);
-  ctx.quadraticCurveTo(8, 4, 30, 2);
-  ctx.quadraticCurveTo(46, 4, 48, 16);
-  ctx.lineTo(6, 22);
+  ctx.moveTo(80, 22);
+  ctx.quadraticCurveTo(78, 4, 56, 2);
+  ctx.quadraticCurveTo(40, 4, 38, 16);
+  ctx.lineTo(80, 22);
   ctx.closePath();
   ctx.fill();
 
   // Yellow scallop band
   ctx.fillStyle = PALETTE.RICKSHAW_HOOD_YELLOW;
   ctx.beginPath();
-  ctx.moveTo(8, 16);
-  ctx.quadraticCurveTo(10, 8, 30, 6);
-  ctx.quadraticCurveTo(42, 8, 44, 16);
-  ctx.lineTo(40, 19);
-  ctx.quadraticCurveTo(30, 10, 10, 19);
+  ctx.moveTo(78, 16);
+  ctx.quadraticCurveTo(76, 8, 56, 6);
+  ctx.quadraticCurveTo(44, 8, 42, 16);
+  ctx.lineTo(46, 19);
+  ctx.quadraticCurveTo(56, 10, 76, 19);
   ctx.fill();
 
   // Floral Rickshaw Painting Motif
   ctx.fillStyle = PALETTE.RICKSHAW_FLOWER;
-  ctx.beginPath(); ctx.arc(28, 11, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(58, 11, 4, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = '#2ecc71';
-  ctx.fillRect(23, 11, 3, 2); ctx.fillRect(31, 11, 3, 2);
+  ctx.fillRect(53, 11, 3, 2); ctx.fillRect(61, 11, 3, 2);
 
   // Tassels / fringes (ঝালর)
   ctx.fillStyle = '#f1c40f';
-  for (let fx = 12; fx <= 44; fx += 5) {
+  for (let fx = 42; fx <= 74; fx += 5) {
     ctx.fillRect(fx, 20, 2, 4);
   }
 
-  // 4. Rickshaw Driver (মামা) in Checkered Lungi
+  // 4. Rickshaw Driver (মামা) in Checkered Lungi (Facing LEFT towards Dino)
   ctx.fillStyle = '#1e272e';
-  ctx.fillRect(52, 26, 10, 4); // saddle
+  ctx.fillRect(24, 26, 10, 4); // saddle
 
   ctx.fillStyle = PALETTE.SHIRT_RED;
-  ctx.beginPath(); ctx.roundRect(48, 16, 12, 14, 3); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(26, 16, 12, 14, 3); ctx.fill();
 
   ctx.fillStyle = '#d63031';
-  ctx.fillRect(49, 17, 10, 3);
+  ctx.fillRect(27, 17, 10, 3);
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(52, 17, 3, 2);
+  ctx.fillRect(31, 17, 3, 2);
 
+  // Driver head facing left
   ctx.fillStyle = PALETTE.SKIN_1;
-  ctx.beginPath(); ctx.arc(54, 11, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(32, 11, 5, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = '#1e272e';
-  ctx.beginPath(); ctx.arc(54, 9, 5.2, Math.PI, 0); ctx.fill();
-  ctx.fillRect(53, 9, 6, 2);
+  ctx.beginPath(); ctx.arc(32, 9, 5.2, Math.PI, 0); ctx.fill();
+  ctx.fillRect(27, 9, 6, 2);
 
+  // Arm reaching forward-left to handlebars
   ctx.strokeStyle = PALETTE.SKIN_1;
   ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.moveTo(56, 20); ctx.lineTo(68, 18); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(30, 20); ctx.lineTo(18, 18); ctx.stroke();
 
+  // Checkered Lungi
   ctx.fillStyle = PALETTE.LUNGI_GREEN;
-  ctx.beginPath(); ctx.roundRect(50, 28, 14, 14, 2); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(22, 28, 14, 14, 2); ctx.fill();
   ctx.fillStyle = PALETTE.LUNGI_CHECK;
-  ctx.fillRect(53, 29, 2, 12);
-  ctx.fillRect(58, 29, 2, 12);
-  ctx.fillRect(50, 34, 14, 1.5);
+  ctx.fillRect(25, 29, 2, 12);
+  ctx.fillRect(30, 29, 2, 12);
+  ctx.fillRect(22, 34, 14, 1.5);
 
   ctx.fillStyle = PALETTE.SKIN_1;
-  ctx.fillRect(60, 40, 4, 6);
+  ctx.fillRect(22, 40, 4, 6);
 
-  // 5. Handlebars & High-power LED Projector Headlight
+  // 5. Handlebars & High-power LED Projector Headlight (Facing LEFT towards Dino)
   ctx.strokeStyle = PALETTE.RICKSHAW_CHROME;
   ctx.lineWidth = 2.5;
   ctx.beginPath();
-  ctx.moveTo(74, 30); ctx.lineTo(70, 16); ctx.lineTo(66, 17);
+  ctx.moveTo(12, 30); ctx.lineTo(16, 16); ctx.lineTo(20, 17);
   ctx.stroke();
 
   ctx.fillStyle = '#00cec9';
-  ctx.fillRect(68, 15, 3, 2);
+  ctx.fillRect(15, 15, 3, 2);
 
+  // Projector LED headlight pointing left
   ctx.fillStyle = PALETTE.RICKSHAW_CHROME;
-  ctx.beginPath(); ctx.roundRect(76, 22, 6, 8, 2); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(4, 22, 6, 8, 2); ctx.fill();
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(79, 23, 3, 6);
+  ctx.fillRect(4, 23, 3, 6);
+  ctx.fillStyle = '#00ffff';
+  ctx.fillRect(4, 25, 2, 2);
 
   // 6. Spoked Wheels
-  drawRickshawWheel(ctx, 16, 46, 10);
-  drawRickshawWheel(ctx, 78, 46, 10);
+  drawRickshawWheel(ctx, 12, 46, 10); // Front wheel (facing left)
+  drawRickshawWheel(ctx, 70, 46, 10); // Rear wheel
 
+  // Rear Mudguard & Red Tail Reflector
   ctx.fillStyle = '#2c3e50';
-  ctx.fillRect(4, 40, 4, 12);
+  ctx.fillRect(78, 40, 4, 12);
   ctx.fillStyle = '#e74c3c';
-  ctx.fillRect(5, 43, 2, 4);
+  ctx.fillRect(79, 43, 2, 4);
 
   ctx.restore();
+}
+
+// ---------------------------------------------------------------------
+// AUTHENTIC DHAKA CITY CORPORATION DIRTY DUSTBIN (ময়লার ডাস্টবিন / DNCC Dumpster)
+// Size: 64 x 52 | Overflowing polythene, food waste, leachate & buzzing flies
+// ---------------------------------------------------------------------
+function drawDhakaDustbinSprite(ctx, frame = 1) {
+  ctx.save();
+
+  // 1. Foul leachate / sewage puddle on asphalt at bottom
+  ctx.fillStyle = '#141a15';
+  ctx.beginPath();
+  ctx.ellipse(32, 49, 28, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#2d3b24'; // oily dark green sheen
+  ctx.beginPath();
+  ctx.ellipse(26, 49, 16, 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Leaking puddle streak trailing on road
+  ctx.fillStyle = 'rgba(20, 26, 21, 0.7)';
+  ctx.fillRect(4, 48, 14, 3);
+
+  // 2. Heavy steel base skids (supports)
+  ctx.fillStyle = '#1e272e';
+  ctx.fillRect(10, 46, 8, 4);
+  ctx.fillRect(46, 46, 8, 4);
+  ctx.fillStyle = '#485460';
+  ctx.fillRect(11, 46, 6, 1);
+  ctx.fillRect(47, 46, 6, 1);
+
+  // 3. Overflowing Garbage Heap (Behind & Inside Bin)
+  // Trash mound extending above rim (y = 6 to y = 20)
+  ctx.fillStyle = '#2f3542';
+  ctx.beginPath();
+  ctx.moveTo(10, 22);
+  ctx.quadraticCurveTo(12, 8, 28, 7);
+  ctx.quadraticCurveTo(42, 6, 54, 22);
+  ctx.closePath();
+  ctx.fill();
+
+  // Polythene bags & food waste inside pile:
+  // Sky-blue Dhaka polythene bag (left)
+  ctx.fillStyle = '#0984e3';
+  ctx.beginPath();
+  ctx.roundRect(12, 10, 14, 12, 3);
+  ctx.fill();
+  ctx.fillStyle = '#74b9ff';
+  ctx.fillRect(16, 8, 5, 4);
+  ctx.fillRect(14, 13, 8, 2);
+
+  // Magenta / Pink polythene bag (middle)
+  ctx.fillStyle = '#e84393';
+  ctx.beginPath();
+  ctx.roundRect(28, 9, 13, 13, 3);
+  ctx.fill();
+  ctx.fillStyle = '#fd79a8';
+  ctx.fillRect(32, 7, 4, 3);
+  ctx.fillRect(30, 12, 7, 2);
+
+  // Yellow plastic bag (right)
+  ctx.fillStyle = '#f1c40f';
+  ctx.beginPath();
+  ctx.roundRect(40, 11, 13, 11, 2);
+  ctx.fill();
+  ctx.fillStyle = '#f39c12';
+  ctx.fillRect(42, 14, 9, 2);
+
+  // White crumpled paper / food box
+  ctx.fillStyle = '#dfe4ea';
+  ctx.fillRect(23, 14, 8, 6);
+  ctx.fillStyle = '#b2bec3';
+  ctx.fillRect(24, 16, 6, 2);
+
+  // Discarded Green/Brown Coconut Shell (ডাবের খোসা)
+  ctx.fillStyle = '#6ab04c'; // outer green
+  ctx.beginPath();
+  ctx.arc(38, 18, 5, 0, Math.PI);
+  ctx.fill();
+  ctx.fillStyle = '#b8860b'; // inner fiber
+  ctx.beginPath();
+  ctx.arc(38, 18, 3.5, 0, Math.PI);
+  ctx.fill();
+  ctx.fillStyle = '#f5cd79'; // white/cream flesh inside
+  ctx.fillRect(36, 18, 4, 1);
+
+  // Rotten Banana Peel (কলার খোসা) hanging drooping over the left edge
+  ctx.fillStyle = '#e1b12c';
+  ctx.beginPath();
+  ctx.moveTo(11, 19);
+  ctx.quadraticCurveTo(6, 20, 5, 27);
+  ctx.lineTo(7, 27);
+  ctx.quadraticCurveTo(8, 22, 13, 21);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#57606f'; // rotten brown tip
+  ctx.fillRect(5, 26, 2, 2);
+
+  // 4. Main Dhaka City Corporation Steel Dumpster Container
+  const binLeft = 8;
+  const binRight = 56;
+  const binTop = 20;
+  const binBottom = 46;
+
+  // Shadow under rim
+  ctx.fillStyle = '#0d2818';
+  ctx.beginPath();
+  ctx.moveTo(binLeft, binTop);
+  ctx.lineTo(binRight, binTop);
+  ctx.lineTo(binRight - 2, binBottom);
+  ctx.lineTo(binLeft + 2, binBottom);
+  ctx.closePath();
+  ctx.fill();
+
+  // Container main face (Dhaka City Corporation Green)
+  ctx.fillStyle = '#1e4d2b';
+  ctx.beginPath();
+  ctx.moveTo(binLeft + 1, binTop + 1);
+  ctx.lineTo(binRight - 1, binTop + 1);
+  ctx.lineTo(binRight - 3, binBottom - 1);
+  ctx.lineTo(binLeft + 3, binBottom - 1);
+  ctx.closePath();
+  ctx.fill();
+
+  // Top reinforced steel rim
+  ctx.fillStyle = '#2d6a4f';
+  ctx.fillRect(binLeft - 2, binTop - 1, (binRight - binLeft) + 4, 3);
+  ctx.fillStyle = '#52b788';
+  ctx.fillRect(binLeft - 1, binTop - 1, (binRight - binLeft) + 2, 1);
+
+  // Corrugated vertical reinforcing steel ribs
+  ctx.fillStyle = '#143820';
+  ctx.fillRect(20, binTop + 2, 3, binBottom - binTop - 3);
+  ctx.fillRect(32, binTop + 2, 3, binBottom - binTop - 3);
+  ctx.fillRect(44, binTop + 2, 3, binBottom - binTop - 3);
+
+  ctx.fillStyle = '#2d6a4f';
+  ctx.fillRect(22, binTop + 2, 1, binBottom - binTop - 3);
+  ctx.fillRect(34, binTop + 2, 1, binBottom - binTop - 3);
+  ctx.fillRect(46, binTop + 2, 1, binBottom - binTop - 3);
+
+  // Lifting trunnions / brackets for compactor trucks (left and right steel lugs)
+  ctx.fillStyle = '#57606f';
+  ctx.fillRect(binLeft - 4, binTop + 10, 4, 6);
+  ctx.fillRect(binRight, binTop + 10, 4, 6);
+  ctx.fillStyle = '#dcdde1';
+  ctx.fillRect(binLeft - 4, binTop + 11, 1, 4);
+  ctx.fillRect(binRight + 3, binTop + 11, 1, 4);
+
+  // Weathering & Rust patches (ঢাকা ডাস্টবিনের চিরচেনা জং)
+  ctx.fillStyle = '#78350f'; // Dark rust
+  ctx.fillRect(binLeft + 3, binBottom - 5, 8, 4);
+  ctx.fillRect(binRight - 11, binBottom - 6, 7, 5);
+  ctx.fillRect(28, binBottom - 4, 6, 3);
+
+  ctx.fillStyle = '#b45309'; // Light rust
+  ctx.fillRect(binLeft + 4, binBottom - 4, 5, 2);
+  ctx.fillRect(binRight - 9, binBottom - 5, 4, 2);
+
+  // DNCC Stencil Logo on the front
+  ctx.fillStyle = '#f1c40f'; // Faded municipal stencil yellow
+  // D
+  ctx.fillRect(14, binTop + 6, 1, 5);
+  ctx.fillRect(15, binTop + 6, 2, 1);
+  ctx.fillRect(15, binTop + 10, 2, 1);
+  ctx.fillRect(17, binTop + 7, 1, 3);
+  // N
+  ctx.fillRect(24, binTop + 6, 1, 5);
+  ctx.fillRect(25, binTop + 7, 1, 2);
+  ctx.fillRect(26, binTop + 9, 1, 1);
+  ctx.fillRect(27, binTop + 6, 1, 5);
+  // C
+  ctx.fillRect(36, binTop + 6, 3, 1);
+  ctx.fillRect(36, binTop + 7, 1, 3);
+  ctx.fillRect(36, binTop + 10, 3, 1);
+  // C
+  ctx.fillRect(48, binTop + 6, 3, 1);
+  ctx.fillRect(48, binTop + 7, 1, 3);
+  ctx.fillRect(48, binTop + 10, 3, 1);
+
+  // Spillover trash on the left side of bin onto pavement
+  ctx.fillStyle = '#e84393';
+  ctx.fillRect(binLeft - 4, binBottom - 4, 4, 3);
+  ctx.fillStyle = '#0984e3';
+  ctx.fillRect(binLeft - 2, binBottom - 2, 4, 2);
+
+  // 5. Animated Stench Wisps & Swarm of Buzzing Flies (মাছি)
+  ctx.fillStyle = 'rgba(46, 204, 113, 0.45)';
+  if (frame === 1) {
+    // Wisps frame 1
+    ctx.fillRect(18, 4, 2, 3); ctx.fillRect(20, 2, 2, 3); ctx.fillRect(19, 0, 2, 2);
+    ctx.fillRect(36, 3, 2, 3); ctx.fillRect(38, 1, 2, 3);
+    ctx.fillRect(48, 5, 2, 3); ctx.fillRect(46, 3, 2, 3);
+
+    // Buzzing flies (frame 1)
+    drawFly(ctx, 16, 5);
+    drawFly(ctx, 27, 2);
+    drawFly(ctx, 39, 4);
+    drawFly(ctx, 47, 8);
+    drawFly(ctx, 22, 11);
+  } else {
+    // Wisps frame 2
+    ctx.fillRect(19, 3, 2, 3); ctx.fillRect(17, 1, 2, 3); ctx.fillRect(18, 0, 2, 2);
+    ctx.fillRect(37, 4, 2, 3); ctx.fillRect(35, 2, 2, 3);
+    ctx.fillRect(47, 4, 2, 3); ctx.fillRect(49, 2, 2, 3);
+
+    // Buzzing flies (frame 2)
+    drawFly(ctx, 14, 3);
+    drawFly(ctx, 30, 4);
+    drawFly(ctx, 36, 2);
+    drawFly(ctx, 44, 6);
+    drawFly(ctx, 25, 9);
+  }
+
+  ctx.restore();
+}
+
+function drawFly(ctx, x, y) {
+  // 2x2 fly body (black) + 1px translucent wing
+  ctx.fillStyle = '#1e272e';
+  ctx.fillRect(x, y, 2, 2);
+  ctx.fillStyle = '#dff9fb';
+  ctx.fillRect(x + 1, y - 1, 1, 1);
 }
 
 function drawRickshawWheel(ctx, cx, cy, r) {
@@ -1321,6 +1578,42 @@ class SoundSynth {
     noise.start(t);
   }
 
+  playStenchBuzz() {
+    if (this.muted || !this.ctx) return;
+    this.ensureContext();
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(260, t);
+
+    // Fast LFO fly buzz flutter
+    const lfo = this.ctx.createOscillator();
+    const lfoGain = this.ctx.createGain();
+    lfo.frequency.setValueAtTime(45, t);
+    lfoGain.gain.setValueAtTime(50, t);
+    lfo.connect(osc.frequency);
+    lfo.start(t);
+    lfo.stop(t + 0.32);
+
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1400, t);
+    filter.Q.value = 2.8;
+
+    gain.gain.setValueAtTime(0.01, t);
+    gain.gain.linearRampToValueAtTime(0.18, t + 0.06);
+    gain.gain.linearRampToValueAtTime(0.01, t + 0.32);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.masterGain);
+
+    osc.start(t);
+    osc.stop(t + 0.33);
+  }
+
   playCoinSnatch() {
     if (this.muted || !this.ctx) return;
     this.ensureContext();
@@ -1929,6 +2222,7 @@ const OBSTACLE_TYPES = {
   ELECTRIC_POLE: 'ELECTRIC_POLE',
   BATTERY_RICKSHAW: 'BATTERY_RICKSHAW',
   CHANDABAZ: 'CHANDABAZ',
+  DIRTY_DUSTBIN: 'DIRTY_DUSTBIN',
   CROW_LOW: 'CROW_LOW',
   CROW_HIGH: 'CROW_HIGH'
 };
@@ -1975,6 +2269,19 @@ class ObstacleManager {
           const shouts = ['সাইড দেন মামা!', 'আরে ভাই দেখে চালান!', 'ব্রেক ধরে না মামা!'];
           obs.speechBubble = { text: shouts[Math.floor(Math.random() * shouts.length)], duration: 1.5 };
         }
+      } else if (obs.type === OBSTACLE_TYPES.DIRTY_DUSTBIN) {
+        if (!obs.hasReacted && obs.x < 560 && obs.x > 320) {
+          obs.hasReacted = true;
+          audio.playStenchBuzz();
+          const shouts = [
+            'উফ! কি বিশ্রী গন্ধ!',
+            'সিটি কর্পোরেশনের ডাস্টবিন!',
+            'নাকে রুমাল দেন মামা!',
+            'মাছি ভনভন করতাছে!',
+            'রাস্তায় ময়লা ফেলা নিষেধ!'
+          ];
+          obs.speechBubble = { text: shouts[Math.floor(Math.random() * shouts.length)], duration: 1.6 };
+        }
       } else if (obs.type === OBSTACLE_TYPES.CHANDABAZ) {
         if (!obs.hasDemanded && obs.x < 550 && obs.x > 280) {
           obs.hasDemanded = true;
@@ -2012,7 +2319,12 @@ class ObstacleManager {
     const extraRandomGap = 90 + Math.random() * 210;
     this.nextSpawnDistance = minClearance + extraRandomGap;
 
-    const candidates = [OBSTACLE_TYPES.BATTERY_RICKSHAW, OBSTACLE_TYPES.ELECTRIC_POLE, OBSTACLE_TYPES.CHANDABAZ];
+    const candidates = [
+      OBSTACLE_TYPES.BATTERY_RICKSHAW,
+      OBSTACLE_TYPES.ELECTRIC_POLE,
+      OBSTACLE_TYPES.CHANDABAZ,
+      OBSTACLE_TYPES.DIRTY_DUSTBIN
+    ];
     if (this.crowUnlocked) {
       candidates.push(OBSTACLE_TYPES.CROW_LOW);
       candidates.push(OBSTACLE_TYPES.CROW_HIGH);
@@ -2030,6 +2342,18 @@ class ObstacleManager {
         h: 58,
         hitbox: { ox: 6, oy: 6, w: 74, h: 50 },
         hasHonked: false,
+        speechBubble: null
+      };
+    } else if (type === OBSTACLE_TYPES.DIRTY_DUSTBIN) {
+      obs = {
+        type,
+        x: W + 20,
+        y: GROUND_Y - 52,
+        w: 64,
+        h: 52,
+        hitbox: { ox: 5, oy: 6, w: 54, h: 46 },
+        animTimer: 0,
+        hasReacted: false,
         speechBubble: null
       };
     } else if (type === OBSTACLE_TYPES.ELECTRIC_POLE) {
@@ -2118,6 +2442,10 @@ class ObstacleManager {
 
       if (obs.type === OBSTACLE_TYPES.BATTERY_RICKSHAW) {
         ctx.drawImage(SPRITES.BATTERY_RICKSHAW, ix, iy);
+      } else if (obs.type === OBSTACLE_TYPES.DIRTY_DUSTBIN) {
+        obs.animTimer = (obs.animTimer || 0) + 0.12;
+        const frame = Math.floor(obs.animTimer) % 2 === 0 ? SPRITES.DIRTY_DUSTBIN_1 : SPRITES.DIRTY_DUSTBIN_2;
+        ctx.drawImage(frame, ix, iy);
       } else if (obs.type === OBSTACLE_TYPES.ELECTRIC_POLE) {
         ctx.drawImage(SPRITES.ELECTRIC_POLE, ix, iy);
       } else if (obs.type === OBSTACLE_TYPES.CHANDABAZ) {
@@ -2252,13 +2580,21 @@ class LoadSheddingManager {
       // Obstacles
       for (const obs of obstacleManager.obstacles) {
         if (obs.type === OBSTACLE_TYPES.BATTERY_RICKSHAW) {
-          const hx = obs.x + 80;
-          const hy = obs.y + 26;
+          const hx = obs.x + 6;
+          const hy = obs.y + 25;
+          mctx.beginPath();
+          mctx.arc(hx, hy, 12, 0, Math.PI * 2);
+          mctx.fill();
+
           mctx.beginPath();
           mctx.moveTo(hx, hy);
-          mctx.lineTo(hx - 180, hy - 24);
-          mctx.lineTo(hx - 180, hy + 38);
+          mctx.lineTo(hx - 190, hy - 26);
+          mctx.lineTo(hx - 190, hy + 38);
           mctx.closePath();
+          mctx.fill();
+        } else if (obs.type === OBSTACLE_TYPES.DIRTY_DUSTBIN) {
+          mctx.beginPath();
+          mctx.roundRect(obs.x + 4, obs.y + 10, obs.w - 8, obs.h - 10, 4);
           mctx.fill();
         } else if (obs.type === OBSTACLE_TYPES.CHANDABAZ) {
           const px = obs.x + 54;
@@ -2303,14 +2639,28 @@ class LoadSheddingManager {
       ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
       for (const obs of obstacleManager.obstacles) {
         if (obs.type === OBSTACLE_TYPES.BATTERY_RICKSHAW) {
-          const hx = obs.x + 80;
-          const hy = obs.y + 26;
+          const hx = obs.x + 6;
+          const hy = obs.y + 25;
           ctx.beginPath();
           ctx.moveTo(hx, hy);
-          ctx.lineTo(hx - 180, hy - 24);
-          ctx.lineTo(hx - 180, hy + 38);
+          ctx.lineTo(hx - 190, hy - 26);
+          ctx.lineTo(hx - 190, hy + 38);
           ctx.closePath();
           ctx.fill();
+
+          // High-power LED projector lens flare
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(hx - 2, hy - 3, 4, 6);
+          ctx.fillStyle = 'rgba(0, 206, 201, 0.6)';
+          ctx.beginPath(); ctx.arc(hx, hy, 8, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
+        } else if (obs.type === OBSTACLE_TYPES.DIRTY_DUSTBIN) {
+          // Stench aura in the dark
+          ctx.fillStyle = 'rgba(46, 204, 113, 0.16)';
+          ctx.beginPath();
+          ctx.arc(obs.x + 32, obs.y + 26, 24, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
         }
       }
       ctx.restore();
@@ -2460,7 +2810,7 @@ class OverlayRenderer {
       const subSize = Math.max(13, Math.floor(17 * this.scale));
       ctx.font = '600 ' + subSize + 'px ' + fontStack;
       ctx.fillStyle = '#ff6b6b';
-      ctx.fillText('ব্যাটারি রিকশা ও লোডশেডিংয়ের ভিড়ে ডাইনোকে বাঁচান!', this.width / 2, badgeY + 64 * this.scale);
+      ctx.fillText('ব্যাটারি রিকশা, ময়লার ডাস্টবিন ও লোডশেডিংয়ের ভিড়ে ডাইনোকে বাঁচান!', this.width / 2, badgeY + 64 * this.scale);
 
       const promptSize = Math.max(12, Math.floor(15 * this.scale));
       ctx.font = '400 ' + promptSize + 'px ' + fontStack;
@@ -2595,10 +2945,11 @@ function generateShareScorecard(score, highScore, funnyLine) {
     ctx.fillRect(rx, 420, 45, 5);
   }
 
-  // Draw Exact Chrome T-Rex on scorecard
+  // Draw Exact Chrome T-Rex, Dustbin, and Battery Rickshaw on scorecard
   ctx.save();
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(SPRITES.DINO_RUN1, 60, 240, 66 * 1.5, 71 * 1.5);
+  ctx.drawImage(SPRITES.DIRTY_DUSTBIN_1, 470, 280, 64 * 1.3, 52 * 1.3);
   ctx.drawImage(SPRITES.BATTERY_RICKSHAW, 680, 275, 86 * 1.4, 58 * 1.4);
   ctx.restore();
 
@@ -2610,7 +2961,7 @@ function generateShareScorecard(score, highScore, funnyLine) {
 
   ctx.fillStyle = '#ced6e0';
   ctx.font = '600 20px ' + font;
-  ctx.fillText('ঢাকা শহরের ব্যাটারি রিকশা ও লোডশেডিংয়ের মাঝে ডাইনোর লড়াই!', 200, 115);
+  ctx.fillText('ঢাকা শহরের ব্যাটারি রিকশা, ডাস্টবিন ও লোডশেডিংয়ের মাঝে ডাইনোর লড়াই!', 200, 115);
 
   ctx.fillStyle = 'rgba(231, 76, 60, 0.18)';
   ctx.strokeStyle = '#e74c3c';
@@ -2862,7 +3213,7 @@ class GameApp {
           await navigator.share({
             files: [file],
             title: 'ডাইনো লোডশেডিং স্কোর কার্ড',
-            text: 'ঢাকা শহরের লোডশেডিং ও ব্যাটারি রিকশার মাঝে আমি টিকেছি ' + toBangla(this.score) + ' ঘণ্টা! তুমি কতক্ষণ পারবে?'
+            text: 'ঢাকা শহরের লোডশেডিং, ব্যাটারি রিকশা ও ডাস্টবিনের মাঝে আমি টিকেছি ' + toBangla(this.score) + ' ঘণ্টা! তুমি কতক্ষণ পারবে?'
           });
           return;
         } catch (err) {
